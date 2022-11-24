@@ -322,7 +322,7 @@ Open linux/drivers/iio/gyro/Makefile and add the SMI230 entry at bottom
 		smi230_gyro-objs += smi230_gyro_spi.o
 	endif
 
-- Change deveice tree overlay	
+- Change devicetree overlay	
 	
 Open linux/arch/arm/boot/dts/overlays/spi-rtc-overlay.dts and change the content as following
 	
@@ -480,14 +480,14 @@ Power on the board. We firstly check if the driver was initialized properly
    [    8.492520] Bosch Sensor Device SMI230ACC initialized
    
    
-If the driver was installed properly, 2 folders will be created. A number of deveice files are created in the folders. which we can use to read/write data from/to the sensor
+If the driver was installed properly, 2 folders will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor
 
 
    /sys/bus/iio/devices/iio:device0
    
    /sys/bus/iio/devices/iio:device1
    
-.. note:: Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a "name" file in the deveice folder, which we can read to find out the sensor type
+.. note:: Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a "name" file in the devicefolder, which we can read to find out the sensor type
 
 ::
 
@@ -586,7 +586,7 @@ Upload iio_generic_buffer in board and execute it
   57.000000 -97.000000 8164.000000 1665428973611084557
   [accX accY accZ time_ns]
 
-.. hint:: Check the device number of SMI230ACC by reading "name" from deveice folder
+.. hint:: Check the device number of SMI230ACC by reading "name" from devicefolder
 
 ::
 
@@ -917,7 +917,7 @@ data sync configuration is able to be found under acc folder
   └── sampling_frequency_available                           // vaild data sync output data rate
   
 
-.. hint:: Check the device number of SMI230ACC by reading "name" from deveice folder
+.. hint:: Check the device number of SMI230ACC by reading "name" from devicefolder
 
 ::
 
