@@ -401,17 +401,19 @@ Activate the option as following
   
 .. hint:: To activate an option, press "y" on the option. A \* appears, which means this option is activated as part of the kernel. Alternatively we can press "m" on the option. A "M" appears, which means this option is activated as kernel module (not as part of the kernel). Therefore we need to manually install the kernel module by ourself.
 
-Device Drivers -->	
-	<\*>Industrial I/O support  --->
-		-\*-     Industrial I/O buffering based on kfifo
+::
+
+  Device Drivers -->	
+	<*>Industrial I/O support  --->
+		-*-     Industrial I/O buffering based on kfifo
 		
-		-\*-     Industrial I/O triggered buffer support
+		-*-     Industrial I/O triggered buffer support
 		
 		Accelerometers  --->
-			<\*> Bosch Sensor SMI230 Accelerometer
+			<*> Bosch Sensor SMI230 Accelerometer
 		
 		Digital gyroscope sensors  --->
-			<\*> BOSCH SMI230 Gyro Sensor
+			<*> BOSCH SMI230 Gyro Sensor
 		
 	
 - Build SMI230 Linux driver	
@@ -456,14 +458,14 @@ open the "config.txt" in "boot" partition, and add the following entries
 	dtoverlay=spi-rtc,smi230acc
 	dtoverlay=spi-rtc,smi230gyro
 
-Take the SD card out and put it back in raspberry pi.
+Take the SD card out and put it back in board.
 
 4. Work with SMI230 Linux driver
 =================================
 
 - Check driver initialization
 
-Power on the raspberry pi. We firstly check if the driver was initialized properly
+Power on the board. We firstly check if the driver was initialized properly
 
 ::
 
@@ -558,7 +560,7 @@ Build the example
   cd tools
   make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iio
   
-Upload iio_generic_buffer in raspberry pi and execute it
+Upload iio_generic_buffer in board and execute it
 
 .. note:: For the following exsample we use accelerometer. Gyroscope is quite similar. Run iio_generic_buffer as root.  Use device number of SMI230ACC -N 1.  
   
@@ -584,7 +586,7 @@ Upload iio_generic_buffer in raspberry pi and execute it
   57.000000 -97.000000 8164.000000 1665428973611084557
   [accX accY accZ time_ns]
 
-.. note:: Check the device number of SMI230ACC by reading "name" from deveice folder
+.. hint:: Check the device number of SMI230ACC by reading "name" from deveice folder
 
 ::
 
@@ -843,5 +845,131 @@ Orientation Mapping
 | **Face Down -> evtype: evtype: change, direction: falling**
 
 
-5.4 Datasync
-----------------------
+5.4 Data Synchronization
+---------------------------
+
+To achieve data synchronization on SMI230, the new data interrupt signal from the gyroscope of the SMI230 needs to be connected to one of the interrupt pins of the SMI230 accelerometer (which can be configured as input pins). The internal signal processing unit of the accelerometer uses the data ready signal from the gyroscope to synchronize and interpolate the data of the accelerometer, considering the group delay of the sensors. The accelerometer part can then notify the host of available data. With this technique, it is possible to achieve synchronized data and provide accelerometer data at an ODR up to 2 kHz. The data synchronization feature supports 100 Hz, 200 Hz, 400 Hz, 1 kHz and 2 kHz data rates. For more details see SMI230 TCD 7.10
+
+.. note:: SMI230 Linux driver only support the application schematic defined in TCD 7.10.2. The SMI230 interrupt pins INT1 (ACC) and INT3 (GYR) have to be connected externally on the PCB. The GYR new data interrupt needs to be mapped to INT3, while INT1 needs to be configured as an input pin. For a data ready host notification, the interrupt pin INT2 (ACC) shall be used.
+
+- Re-config ther kernel to activate data synchronization
+
+.. hint:: To activate an option, press "y" on the option. A \* appears, which means this option is activated as part of the kernel. Alternatively we can press "m" on the option. A "M" appears, which means this option is activated as kernel module (not as part of the kernel). Therefore we need to manually install the kernel module by ourself.
+
+::
+  
+  Device Drivers -->	
+	<*>Industrial I/O support  --->
+		-*-     Industrial I/O buffering based on kfifo
+		
+		-*-     Industrial I/O triggered buffer support
+		
+		Accelerometers  --->
+			<*> Bosch Sensor SMI230 Accelerometer
+			     Select operating mode (New data mode)  --->
+			        ( ) New data mode
+			        ( ) FIFO mode
+			        (X) Data Sync mode 
+		
+		Digital gyroscope sensors  --->
+			<*> BOSCH SMI230 Gyro Sensor
+			     Select working mode (New data)  ---> 
+			        ( ) New data 
+			        ( ) FIFO 
+			        (X) Data sync 
+
+- Build SMI230 Linux driver	
+
+::
+
+  make -j4 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage modules dtbs
+  
+- Install the kernel with SMI230 Linux driver in SD card
+
+insert the SD card (created in 2.3). A "boot" partition and a "rootfs" partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that
+
+  /media/username/boot
+  
+  /media/username/rootfs
+
+write the kernel with SMI230 Linux driver in SD card
+
+::
+
+  export KERNEL=kernel7
+  export SD_BOOT_PATH=/media/username/boot
+  export SD_ROOTFS_PATH=/media/username/rootfs
+  sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
+  sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
+  sudo cp arch/arm/boot/zImage $SD_BOOT_PATH/$KERNEL.img
+  sudo cp arch/arm/boot/dts/*.dtb $SD_BOOT_PATH
+  sudo cp arch/arm/boot/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
+  sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
+
+Take the SD card out and put it back in board. Power on 
+  
+data sync configuration is able to be found under acc folder
+
+::
+
+  /sys/bus/iio/devices/iio:deviceX
+  ├── sampling_frequency                                     // data sync output data rate
+  └── sampling_frequency_available                           // vaild data sync output data rate
+  
+
+.. hint:: Check the device number of SMI230ACC by reading "name" from deveice folder
+
+::
+
+	cd /sys/bus/iio/devices/iio:device1
+	sudo su
+	cat name
+	SMI230ACC  
+
+
+Enable acc and set output data rate to 100 Hz
+
+::
+
+    sudo su
+    root@raspberrypi:/home/pi# echo normal > /sys/bus/iio/devices/iio\:device1/power_mode
+    root@raspberrypi:/home/pi# echo 100 > /sys/bus/iio/devices/iio\:device1/sampling_frequency
+    
+Read data from buffer
+
+::
+
+   root@raspberrypi:/home/pi# ./iio_generic_buffer -N 1 -c -1 -a
+   iio device number being used is 1
+   iio trigger number being used is 0
+   Enabling all channels
+   Enabling: in_accel_y_en
+   Enabling: in_anglvel_z_en
+   Enabling: in_accel_x_en
+   Enabling: in_timestamp_en
+   Enabling: in_anglvel_y_en
+   Enabling: in_accel_z_en
+   Enabling: in_anglvel_x_en
+   /sys/bus/iio/devices/iio:device1 SMI230ACC-trigger
+   -6.000000 -20.000000 8197.000000 -2.000000 3.000000 -2.000000 1669286887634661928
+   6.000000 -13.000000 8210.000000 -1.000000 2.000000 -2.000000 1669286887644684248
+   7.000000 -8.000000 8214.000000 -4.000000 3.000000 -1.000000 1669286887654704745
+   6.000000 -7.000000 8212.000000 0.000000 1.000000 -2.000000 1669286887664725555
+   5.000000 -20.000000 8203.000000 -3.000000 2.000000 0.000000 1669286887674767145
+   -7.000000 -39.000000 8213.000000 -2.000000 4.000000 -2.000000 1669286887684766393
+   -1.000000 -28.000000 8204.000000 -1.000000 1.000000 -1.000000 1669286887694787306
+   -10.000000 -10.000000 8211.000000 -1.000000 2.000000 -2.000000 1669286887704806866
+   -8.000000 1.000000 8195.000000 -1.000000 2.000000 -1.000000 1669286887714828249
+   -28.000000 -16.000000 8199.000000 -1.000000 1.000000 -1.000000 1669286887724851610
+   -18.000000 -24.000000 8207.000000 -2.000000 1.000000 -2.000000 1669286887734863149
+   4.000000 -22.000000 8218.000000 -2.000000 2.000000 -1.000000 1669286887744886042
+   3.000000 -20.000000 8210.000000 0.000000 4.000000 -2.000000 1669286887754906904
+   13.000000 -19.000000 8209.000000 -3.000000 3.000000 -2.000000 1669286887764926203
+   14.000000 -17.000000 8206.000000 -3.000000 2.000000 -3.000000 1669286887774948940
+   6.000000 -6.000000 8213.000000 -2.000000 2.000000 -1.000000 1669286887784969697
+   [accX_sync accY_sync accZ_sync gyroX, gyroY, gyroZ,time_ns]
+
+
+
+
+
