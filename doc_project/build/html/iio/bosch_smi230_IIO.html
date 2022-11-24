@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Welcome to Bosch MEMS Sensor’s documentation!" href="../index.html" /> 
+    <link rel="prev" title="Bosch MEMS Sensor Linux Driver documentation" href="../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -105,7 +105,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#high-g">5.3 High-G</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#low-g">5.3 Low-G</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#orientation">5.4 Orientation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#datasync">5.4 Datasync</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-synchronization">5.4 Data Synchronization</a></li>
 </ul>
 </li>
 </ul>
@@ -563,22 +563,19 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 <p class="first admonition-title">Hint</p>
 <p class="last">To activate an option, press “y” on the option. A * appears, which means this option is activated as part of the kernel. Alternatively we can press “m” on the option. A “M” appears, which means this option is activated as kernel module (not as part of the kernel). Therefore we need to manually install the kernel module by ourself.</p>
 </div>
-<dl class="docutils">
-<dt>Device Drivers –&gt;</dt>
-<dd><dl class="first last docutils">
-<dt>&lt;*&gt;Industrial I/O support  —&gt;</dt>
-<dd><p class="first">-*-     Industrial I/O buffering based on kfifo</p>
-<p>-*-     Industrial I/O triggered buffer support</p>
-<dl class="last docutils">
-<dt>Accelerometers  —&gt;</dt>
-<dd>&lt;*&gt; Bosch Sensor SMI230 Accelerometer</dd>
-<dt>Digital gyroscope sensors  —&gt;</dt>
-<dd>&lt;*&gt; BOSCH SMI230 Gyro Sensor</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Device</span> <span class="n">Drivers</span> <span class="o">--&gt;</span>
+      <span class="o">&lt;*&gt;</span><span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">support</span>  <span class="o">---&gt;</span>
+              <span class="o">-*-</span>     <span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">buffering</span> <span class="n">based</span> <span class="n">on</span> <span class="n">kfifo</span>
+
+              <span class="o">-*-</span>     <span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">triggered</span> <span class="n">buffer</span> <span class="n">support</span>
+
+              <span class="n">Accelerometers</span>  <span class="o">---&gt;</span>
+                      <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230</span> <span class="n">Accelerometer</span>
+
+              <span class="n">Digital</span> <span class="n">gyroscope</span> <span class="n">sensors</span>  <span class="o">---&gt;</span>
+                      <span class="o">&lt;*&gt;</span> <span class="n">BOSCH</span> <span class="n">SMI230</span> <span class="n">Gyro</span> <span class="n">Sensor</span>
+</pre></div>
+</div>
 <ul class="simple">
 <li>Build SMI230 Linux driver</li>
 </ul>
@@ -619,7 +616,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <span class="n">dtoverlay</span><span class="o">=</span><span class="n">spi</span><span class="o">-</span><span class="n">rtc</span><span class="p">,</span><span class="n">smi230gyro</span>
 </pre></div>
 </div>
-<p>Take the SD card out and put it back in raspberry pi.</p>
+<p>Take the SD card out and put it back in board.</p>
 </div>
 </div>
 </div>
@@ -628,7 +625,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <ul class="simple">
 <li>Check driver initialization</li>
 </ul>
-<p>Power on the raspberry pi. We firstly check if the driver was initialized properly</p>
+<p>Power on the board. We firstly check if the driver was initialized properly</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmesg</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">SMI230</span>
 <span class="p">[</span>    <span class="mf">8.473601</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230GYRO</span> <span class="n">hardware</span> <span class="n">initialized</span>
 <span class="p">[</span>    <span class="mf">8.487473</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230GYRO</span> <span class="n">device</span> <span class="n">alloced</span>
@@ -710,7 +707,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <span class="n">make</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm</span> <span class="n">CROSS_COMPILE</span><span class="o">=</span><span class="n">arm</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnueabihf</span><span class="o">-</span> <span class="n">iio</span>
 </pre></div>
 </div>
-<p>Upload iio_generic_buffer in raspberry pi and execute it</p>
+<p>Upload iio_generic_buffer in board and execute it</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">For the following exsample we use accelerometer. Gyroscope is quite similar. Run iio_generic_buffer as root.  Use device number of SMI230ACC -N 1.</p>
@@ -736,8 +733,8 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <span class="p">[</span><span class="n">accX</span> <span class="n">accY</span> <span class="n">accZ</span> <span class="n">time_ns</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
 <p class="last">Check the device number of SMI230ACC by reading “name” from deveice folder</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
@@ -952,8 +949,122 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <div class="line"><strong>Face Down -&gt; evtype: evtype: change, direction: falling</strong></div>
 </div>
 </div>
-<div class="section" id="datasync">
-<h3>5.4 Datasync<a class="headerlink" href="#datasync" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="data-synchronization">
+<h3>5.4 Data Synchronization<a class="headerlink" href="#data-synchronization" title="Permalink to this headline">¶</a></h3>
+<p>To achieve data synchronization on SMI230, the new data interrupt signal from the gyroscope of the SMI230 needs to be connected to one of the interrupt pins of the SMI230 accelerometer (which can be configured as input pins). The internal signal processing unit of the accelerometer uses the data ready signal from the gyroscope to synchronize and interpolate the data of the accelerometer, considering the group delay of the sensors. The accelerometer part can then notify the host of available data. With this technique, it is possible to achieve synchronized data and provide accelerometer data at an ODR up to 2 kHz. The data synchronization feature supports 100 Hz, 200 Hz, 400 Hz, 1 kHz and 2 kHz data rates. For more details see SMI230 TCD 7.10</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">SMI230 Linux driver only support the application schematic defined in TCD 7.10.2. The SMI230 interrupt pins INT1 (ACC) and INT3 (GYR) have to be connected externally on the PCB. The GYR new data interrupt needs to be mapped to INT3, while INT1 needs to be configured as an input pin. For a data ready host notification, the interrupt pin INT2 (ACC) shall be used.</p>
+</div>
+<ul class="simple">
+<li>Re-config ther kernel to activate data synchronization</li>
+</ul>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">To activate an option, press “y” on the option. A * appears, which means this option is activated as part of the kernel. Alternatively we can press “m” on the option. A “M” appears, which means this option is activated as kernel module (not as part of the kernel). Therefore we need to manually install the kernel module by ourself.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Device</span> <span class="n">Drivers</span> <span class="o">--&gt;</span>
+      <span class="o">&lt;*&gt;</span><span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">support</span>  <span class="o">---&gt;</span>
+              <span class="o">-*-</span>     <span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">buffering</span> <span class="n">based</span> <span class="n">on</span> <span class="n">kfifo</span>
+
+              <span class="o">-*-</span>     <span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">triggered</span> <span class="n">buffer</span> <span class="n">support</span>
+
+              <span class="n">Accelerometers</span>  <span class="o">---&gt;</span>
+                      <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230</span> <span class="n">Accelerometer</span>
+                           <span class="n">Select</span> <span class="n">operating</span> <span class="n">mode</span> <span class="p">(</span><span class="n">New</span> <span class="n">data</span> <span class="n">mode</span><span class="p">)</span>  <span class="o">---&gt;</span>
+                              <span class="p">(</span> <span class="p">)</span> <span class="n">New</span> <span class="n">data</span> <span class="n">mode</span>
+                              <span class="p">(</span> <span class="p">)</span> <span class="n">FIFO</span> <span class="n">mode</span>
+                              <span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="n">Data</span> <span class="n">Sync</span> <span class="n">mode</span>
+
+              <span class="n">Digital</span> <span class="n">gyroscope</span> <span class="n">sensors</span>  <span class="o">---&gt;</span>
+                      <span class="o">&lt;*&gt;</span> <span class="n">BOSCH</span> <span class="n">SMI230</span> <span class="n">Gyro</span> <span class="n">Sensor</span>
+                           <span class="n">Select</span> <span class="n">working</span> <span class="n">mode</span> <span class="p">(</span><span class="n">New</span> <span class="n">data</span><span class="p">)</span>  <span class="o">---&gt;</span>
+                              <span class="p">(</span> <span class="p">)</span> <span class="n">New</span> <span class="n">data</span>
+                              <span class="p">(</span> <span class="p">)</span> <span class="n">FIFO</span>
+                              <span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="n">Data</span> <span class="n">sync</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Build SMI230 Linux driver</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="o">-</span><span class="n">j4</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm</span> <span class="n">CROSS_COMPILE</span><span class="o">=</span><span class="n">arm</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnueabihf</span><span class="o">-</span> <span class="n">zImage</span> <span class="n">modules</span> <span class="n">dtbs</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Install the kernel with SMI230 Linux driver in SD card</li>
+</ul>
+<p>insert the SD card (created in 2.3). A “boot” partition and a “rootfs” partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that</p>
+<blockquote>
+<div><p>/media/username/boot</p>
+<p>/media/username/rootfs</p>
+</div></blockquote>
+<p>write the kernel with SMI230 Linux driver in SD card</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export KERNEL=kernel7
+export SD_BOOT_PATH=/media/username/boot
+export SD_ROOTFS_PATH=/media/username/rootfs
+sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
+sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
+sudo cp arch/arm/boot/zImage $SD_BOOT_PATH/$KERNEL.img
+sudo cp arch/arm/boot/dts/*.dtb $SD_BOOT_PATH
+sudo cp arch/arm/boot/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
+sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
+</pre></div>
+</div>
+<p>Take the SD card out and put it back in board. Power on</p>
+<p>data sync configuration is able to be found under acc folder</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/sys/bus/iio/devices/iio:deviceX
+├── sampling_frequency                                     // data sync output data rate
+└── sampling_frequency_available                           // vaild data sync output data rate
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">Check the device number of SMI230ACC by reading “name” from deveice folder</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
+<span class="n">sudo</span> <span class="n">su</span>
+<span class="n">cat</span> <span class="n">name</span>
+<span class="n">SMI230ACC</span>
+</pre></div>
+</div>
+<p>Enable acc and set output data rate to 100 Hz</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">su</span>
+<span class="n">root</span><span class="nd">@raspberrypi</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># echo normal &gt; /sys/bus/iio/devices/iio\:device1/power_mode</span>
+<span class="n">root</span><span class="nd">@raspberrypi</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># echo 100 &gt; /sys/bus/iio/devices/iio\:device1/sampling_frequency</span>
+</pre></div>
+</div>
+<p>Read data from buffer</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@raspberrypi</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># ./iio_generic_buffer -N 1 -c -1 -a</span>
+<span class="n">iio</span> <span class="n">device</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">1</span>
+<span class="n">iio</span> <span class="n">trigger</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">0</span>
+<span class="n">Enabling</span> <span class="nb">all</span> <span class="n">channels</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_accel_y_en</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_anglvel_z_en</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_accel_x_en</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_timestamp_en</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_anglvel_y_en</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_accel_z_en</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_anglvel_x_en</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span> <span class="n">SMI230ACC</span><span class="o">-</span><span class="n">trigger</span>
+<span class="o">-</span><span class="mf">6.000000</span> <span class="o">-</span><span class="mf">20.000000</span> <span class="mf">8197.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mf">3.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887634661928</span>
+<span class="mf">6.000000</span> <span class="o">-</span><span class="mf">13.000000</span> <span class="mf">8210.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mf">2.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887644684248</span>
+<span class="mf">7.000000</span> <span class="o">-</span><span class="mf">8.000000</span> <span class="mf">8214.000000</span> <span class="o">-</span><span class="mf">4.000000</span> <span class="mf">3.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mi">1669286887654704745</span>
+<span class="mf">6.000000</span> <span class="o">-</span><span class="mf">7.000000</span> <span class="mf">8212.000000</span> <span class="mf">0.000000</span> <span class="mf">1.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887664725555</span>
+<span class="mf">5.000000</span> <span class="o">-</span><span class="mf">20.000000</span> <span class="mf">8203.000000</span> <span class="o">-</span><span class="mf">3.000000</span> <span class="mf">2.000000</span> <span class="mf">0.000000</span> <span class="mi">1669286887674767145</span>
+<span class="o">-</span><span class="mf">7.000000</span> <span class="o">-</span><span class="mf">39.000000</span> <span class="mf">8213.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mf">4.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887684766393</span>
+<span class="o">-</span><span class="mf">1.000000</span> <span class="o">-</span><span class="mf">28.000000</span> <span class="mf">8204.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mf">1.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mi">1669286887694787306</span>
+<span class="o">-</span><span class="mf">10.000000</span> <span class="o">-</span><span class="mf">10.000000</span> <span class="mf">8211.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mf">2.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887704806866</span>
+<span class="o">-</span><span class="mf">8.000000</span> <span class="mf">1.000000</span> <span class="mf">8195.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mf">2.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mi">1669286887714828249</span>
+<span class="o">-</span><span class="mf">28.000000</span> <span class="o">-</span><span class="mf">16.000000</span> <span class="mf">8199.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mf">1.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mi">1669286887724851610</span>
+<span class="o">-</span><span class="mf">18.000000</span> <span class="o">-</span><span class="mf">24.000000</span> <span class="mf">8207.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mf">1.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887734863149</span>
+<span class="mf">4.000000</span> <span class="o">-</span><span class="mf">22.000000</span> <span class="mf">8218.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mf">2.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mi">1669286887744886042</span>
+<span class="mf">3.000000</span> <span class="o">-</span><span class="mf">20.000000</span> <span class="mf">8210.000000</span> <span class="mf">0.000000</span> <span class="mf">4.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887754906904</span>
+<span class="mf">13.000000</span> <span class="o">-</span><span class="mf">19.000000</span> <span class="mf">8209.000000</span> <span class="o">-</span><span class="mf">3.000000</span> <span class="mf">3.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mi">1669286887764926203</span>
+<span class="mf">14.000000</span> <span class="o">-</span><span class="mf">17.000000</span> <span class="mf">8206.000000</span> <span class="o">-</span><span class="mf">3.000000</span> <span class="mf">2.000000</span> <span class="o">-</span><span class="mf">3.000000</span> <span class="mi">1669286887774948940</span>
+<span class="mf">6.000000</span> <span class="o">-</span><span class="mf">6.000000</span> <span class="mf">8213.000000</span> <span class="o">-</span><span class="mf">2.000000</span> <span class="mf">2.000000</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mi">1669286887784969697</span>
+<span class="p">[</span><span class="n">accX_sync</span> <span class="n">accY_sync</span> <span class="n">accZ_sync</span> <span class="n">gyroX</span><span class="p">,</span> <span class="n">gyroY</span><span class="p">,</span> <span class="n">gyroZ</span><span class="p">,</span><span class="n">time_ns</span><span class="p">]</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -967,7 +1078,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to Bosch MEMS Sensor’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="Bosch MEMS Sensor Linux Driver documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
