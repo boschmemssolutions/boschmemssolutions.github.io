@@ -20,7 +20,7 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = 'Bosch MEMS Sensor'
+project = 'Bosch MEMS Sensor Linux Driver'
 copyright = '2022, Robert Bosch GmbH'
 author = 'Jianping Shen'
 
@@ -104,7 +104,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'BoschMEMSSensordoc'
+htmlhelp_basename = 'BoschMEMSSensorLinuxDriverdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -131,7 +131,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'BoschMEMSSensor.tex', 'Bosch MEMS Sensor Documentation',
+    (master_doc, 'BoschMEMSSensorLinuxDriver.tex', 'Bosch MEMS Sensor Linux Driver Documentation',
      'Jianping Shen', 'manual'),
 ]
 
@@ -141,7 +141,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'boschmemssensor', 'Bosch MEMS Sensor Documentation',
+    (master_doc, 'boschmemssensorlinuxdriver', 'Bosch MEMS Sensor Linux Driver Documentation',
      [author], 1)
 ]
 
@@ -152,8 +152,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'BoschMEMSSensor', 'Bosch MEMS Sensor Documentation',
-     author, 'BoschMEMSSensor', 'One line description of project.',
+    (master_doc, 'BoschMEMSSensorLinuxDriver', 'Bosch MEMS Sensor Linux Driver Documentation',
+     author, 'BoschMEMSSensorLinuxDriver', 'One line description of project.',
      'Miscellaneous'),
 ]
 
