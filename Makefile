@@ -23,7 +23,8 @@ htmldocs:
 	cd doc_project && make html
 	
 clean:
-	cd doc_project && make clean
+	rm -rf doc_project/build
+	rm -rf docs/*
 	
 public_doc:
 	 cp -rf doc_project/build/html/* docs
