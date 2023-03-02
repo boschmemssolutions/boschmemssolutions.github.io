@@ -11,5 +11,6 @@ Bosch MEMS Sensor Linux Driver documentation
    :caption: Contents:
 
    iio/bosch_smi230_IIO
+   iio/bosch_smi240_IIO
 
 

@@ -1,0 +1,364 @@
+==============================
+Bosch SMI240 IIO driver
+==============================
+
+1. Overview
+===========
+
+The driver is intended to work on Bosch SMI240 Inertial Measurement Unit for Non-Safety Automotive Applications.
+The SMI240 is a combined three axis angular rate and three axis acceleration sensor module with a measurement range of +/-300°/sand up to 16g. SMI240 is a 6 DoF (Degrees of Freedom) sensor module providing acceleration and angular rate signals via a digital interface (SPI). The sensor consists of two Micro Electro Mechanical System (MEMS) elements and a sensor readoutASIC. The ASIC contains analogue front ends and a digital structure for signal processing and communication interface. The sensor module is available in a LGA (Land Grid Array) housing.
+
+2. Hardware Setup
+====================
+
+.. important:: This Hardware Setup serves as a quick startup kit, to help the user to run and understand the driver. It is for demonstration purposes, not supposed to be used in a production environment.
+
+2.1 Hardware Components:
+-------------------------
+
+#. Linux Host Board
+#. SMI240 sensor + Shuttleboard + Motherboard (acquirable from Bosch)
+#. connection cable (female to female)
+#. a mini SD card
+
+
+2.2 Jumpers on the mother board
+---------------------------------
+
+We need to change the default Jumpers. 
+
+#. Remove the jumper "Connection VDDIO" and put this junper to connect "VDD" and "VDDIO"
+
+
+   
+2.3 Cable Connection
+----------------------
+
+::
+   
+     .................................                      .................................          
+    .?^^^^^^^^^^~~~~~~~~^^^^^^^^^^^^^~?       VDD          !!^^^^^^^^^~~~~~~~~~~~~~~^^^^^^^^7~         
+    :?          Host Board            Y~~~~~~~~~~~~~~~~~~~~J~ 1    SMI240 Mother Board      !!         
+    :?                               .J      VDDIO         ?^                               !~         
+    :?                               .Y~~~~~~~~~~~~~~~~~~~~J^ 2                             !~         
+    :?                               .J                    7^                               !~         
+    :?                               .J       GND          7^                               !~         
+    :?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 3                             !~         
+    :?                               .J       MISO         ?^                               !~         
+    :?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 4                             !~         
+    :?                               .Y       MOSI         J~                               !~         
+    :?                               .J~~~~~~~~~~~~~~~~~~~~?~ 5                             !~         
+    :?                               .Y       SLK          J~                               !~         
+    :?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 6                             !~         
+    :?                               .J       CSB          7^                               !~      
+    :?                               .J~~~~~~~~~~~~~~~~~~~~7^ 7                             !~  
+    :?                               .J                    7^                               !~
+    :?                               .J                    7^                               !~
+    :?                               .J                    7^                               !~  
+    :?                               .Y                    J^                               !~         
+    :?                               .J                    ?^                               !~         
+    :?                                Y                    J^                               !~         
+    :J...............................:J                    7~...............................7~         
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                    :^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.
+
+==================  ========  
+SMI240 Shuttle Pin	Function
+==================  ========  
+1					VDD  
+2					VDD IO  
+3					GND   
+4					MISO  
+5					MOSI
+6					SCLK
+7					CSB 
+==================  ========  
+
+2.4 First Startup
+----------------------
+
+#. Write Linux Image (32 bit) to SD Card
+#. Insert SD Card Host Board and power on
+#. Enable SSH on Host Board
+#. Switch the Bus selection to SPI on mother board. The green LED shall be on
+
+   
+3. Software Setup
+====================
+
+
+3.1 Required Software
+----------------------
+
+#. Linux kernel (choose kernel branch rpi-5.15.y)  https://github.com/raspberrypi/linux
+#. SMI240 IIO Linux driver   https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO
+#. Linux environment (native or as VM) 
+
+.. note:: We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 20.04.1 LTS
+
+- Install Toolchain and dependences  
+
+::
+
+   sudo apt install crossbuild-essential-armhf
+   sudo apt install git bc bison flex libssl-dev make libc6-dev libncurses5-dev
+   
+  
+- Clone Linux kernel 
+
+::
+
+  git clone --depth=1 --branch <branch_name> https://github.com/raspberrypi/linux
+
+We use kernel v5.15, replace <branch_name> with "rpi-5.15.y"
+
+- Clone SMI240 IIO Linux driver
+
+::
+  
+  git clone --depth=1  https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO.git
+
+
+
+3.2 Build SMI240 IIO Linux driver
+-----------------------------------
+
+Integrate Linux driver into Linux kernel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Copy source code into Linux kernel
+
+
+::
+
+  cp /smi240-linux-driver-iio/drivers/iio/imu/smi240 linux/drivers/iio/imu
+
+- Add entry in imu Kconfig
+
+Open linux/drivers/iio/imu/Kconfig and add the SMI240 entry at bottom
+
+.. code-block:: kconfig
+
+	source "drivers/iio/imu/.../Kconfig"
+	source "drivers/iio/imu/smi240/Kconfig"
+	source "drivers/iio/imu/.../Kconfig"
+	
+	
+- Add entry in imu Makefile	
+	
+Open linux/drivers/iio/accel/Makefile and add the SMI240 entry at bottom	
+	
+.. code-block:: makefile
+
+	obj-y += smi240/
+	obj-y += s.../
+
+
+- Add devicetree overlay	
+
+Create a devicetree overlay file "smi240-spi-overlay.dts" with the following content, and put it under "linux/arch/arm/boot/dts/overlays"
+
+.. note:: Dependent on your hardware plattform and pin layout, the settings may be diffrent and an adaption to your target system may be required.
+	
+::
+
+	/dts-v1/;
+	/plugin/;
+
+		/ {
+		compatible = "brcm,bcm2835";
+
+		fragment@0 {
+			target = <&spidev0>;
+			__dormant__ {
+				status = "disabled";
+			};
+		};
+	
+		fragment@1 {
+			target = <&spidev1>;
+			__dormant__ {
+				status = "disabled";
+			};
+		};
+	
+		fragment@2 {
+			target = <&spi0>;
+			__dormant__ {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "okay";
+				
+				smi240@0 {
+					compatible = "BOSCH,SMI240";
+					spi-max-frequency = <10000000>;
+					reg = <0>;
+				};
+			};
+		};
+
+		__overrides__ {
+			smi240 = <0>, "=0=2";
+		};
+	};
+	
+  
+  
+- Add entry in devicetree overlay Makefile	
+
+.. code-block:: makefile
+
+    dtbo-$(CONFIG_ARCH_BCM2835) += \
+	... \
+	smi240-spi.dtbo \
+	... \
+	
+
+Build SMI240 Linux driver with the kernel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Config SMI240 Linux driver
+
+::
+
+  cd linux
+  make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- bcm2709_defconfig
+  make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+
+Activate the options as following
+
+  
+.. hint:: To activate an option, press "y" on the option. A \* appears, which means this option is activated as part of the kernel. Alternatively we can press "m" on the option. A "M" appears, which means this option is activated as kernel module (not as part of the kernel). Therefore we need to manually install the kernel module by ourself.
+
+::
+
+  Device Drivers -->	
+	<*>Industrial I/O support  --->		
+		Inertial measurement units  --->
+			<*> Bosch Sensor SMI240 Inertial Measurement Unit
+			(1024) configue read buffer size (NEW)
+		
+	
+- Build SMI240 Linux driver	
+
+::
+
+  make -j4 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage modules dtbs
+	
+.. note:: Build process takes quite long on the first time. To reduce the build time, we use the option "-j4". This is the option to enable the build process to be executed parallelly in 4 threads. To improve the parallel execution, just give a big number e.g. "-j6". How many parallel thread to use is dependent on your processor core number.
+	
+
+- Install the kernel with SMI240 Linux driver in SD card
+
+insert the SD card (created in 2.3). A "boot" partition and a "rootfs" partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that
+
+  /media/username/boot
+  
+  /media/username/rootfs
+
+write the kernel with SMI240 Linux driver in SD card
+
+::
+
+  export KERNEL=kernel7
+  export SD_BOOT_PATH=/media/username/boot
+  export SD_ROOTFS_PATH=/media/username/rootfs
+  sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
+  sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
+  sudo cp arch/arm/boot/zImage $SD_BOOT_PATH/$KERNEL.img
+  sudo cp arch/arm/boot/dts/*.dtb $SD_BOOT_PATH
+  sudo cp arch/arm/boot/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
+  sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
+
+- adapt the boot configuraion
+
+open the "config.txt" in "boot" partition, and add the following entries 
+
+::
+	
+	# Uncomment some or all of these to enable the optional hardware interfaces
+	dtparam=spi=on
+	dtoverlay=smi240-spi,smi240
+
+Take the SD card out and put it back in board.
+
+4. Work with SMI240 Linux driver
+=================================
+
+- Check driver initialization
+
+Power on the board. We firstly check if the driver was initialized properly
+
+::
+
+	dmesg | grep SMI240
+	[   68.592919] SMI240 Chip ID: 0x0024
+	[   68.593345] Bosch Sensor Device SMI240 initialized
+   
+   
+If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor
+
+
+   /sys/bus/iio/devices/iio:device0
+   
+.. note:: Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a "name" file in the devicefolder, that we can read to find out the sensor type
+
+::
+
+	cd /sys/bus/iio/devices/iio:device0
+	cat name
+	SMI240ACC
+	
+
+- Work with driver using command line 
+
+.. note:: To change sensor settings we need root access. It is not sufficient just using "sudo ..." .
+
+Check sensor type
+
+::
+
+	cd /sys/bus/iio/devices/iio:device1
+	sudo su
+	cat name
+	SMI240ACC
+	
+Read sensor current temperature.
+
+::
+
+	cat in_temp_object_raw
+	19
+
+Read accelerometer current value 
+
+::
+
+	cat in_accel_x_raw
+	36
+	cat in_accel_y_raw
+	-19
+	cat in_accel_z_raw
+	2031
+  
+Read gyroscope current value
+
+::
+
+	cat in_anglvel_x_raw
+	-9  
+	cat in_anglvel_y_raw
+	-9
+	cat in_anglvel_z_raw
+	-1
+
+- Get synchronized accelerometer, gyroscope and temperature value
+
+.. hint:: Synchronisation of sensor data is done by trigger and capture mechanism. Sensor measurement data and channel status of all channels (LF and HF) on one chip select line can be captured (stored sensor internally) at one point in time and read out at a later point in time
+
+::
+
+	cat in_temp_accel_anglvel_capture
+	19 38 -14 2029 -4 -17 -3
+	[temp accX accY accZ gyroX gyroY gyroZ]
+
+This triggers the data capture and read the synchronized accelerometer, gyroscope and temperature value from sensor
+

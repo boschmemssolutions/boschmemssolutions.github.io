@@ -1,1 +1,1 @@
-# boschmemssolutions.github.io
+# Bosch MEMS Sensor Linux Driver documentation

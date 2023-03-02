@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Bosch SMI240 IIO driver &mdash; Bosch MEMS Sensor Linux Driver  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Bosch SMI230 IIO driver" href="bosch_smi230_IIO.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Bosch MEMS Sensor Linux Driver
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="bosch_smi230_IIO.html">Bosch SMI230 IIO driver</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bosch SMI240 IIO driver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-setup">2. Hardware Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hardware-components">2.1 Hardware Components:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#jumpers-on-the-mother-board">2.2 Jumpers on the mother board</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cable-connection">2.3 Cable Connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#first-startup">2.4 First Startup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#software-setup">3. Software Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#required-software">3.1 Required Software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-smi240-iio-linux-driver">3.2 Build SMI240 IIO Linux driver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#integrate-linux-driver-into-linux-kernel">Integrate Linux driver into Linux kernel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#build-smi240-linux-driver-with-the-kernel">Build SMI240 Linux driver with the kernel</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#work-with-smi240-linux-driver">4. Work with SMI240 Linux driver</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bosch MEMS Sensor Linux Driver</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Bosch SMI240 IIO driver</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/iio/bosch_smi240_IIO.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="bosch-smi240-iio-driver">
+<h1>Bosch SMI240 IIO driver<a class="headerlink" href="#bosch-smi240-iio-driver" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The driver is intended to work on Bosch SMI240 Inertial Measurement Unit for Non-Safety Automotive Applications.
+The SMI240 is a combined three axis angular rate and three axis acceleration sensor module with a measurement range of +/-300°/sand up to 16g. SMI240 is a 6 DoF (Degrees of Freedom) sensor module providing acceleration and angular rate signals via a digital interface (SPI). The sensor consists of two Micro Electro Mechanical System (MEMS) elements and a sensor readoutASIC. The ASIC contains analogue front ends and a digital structure for signal processing and communication interface. The sensor module is available in a LGA (Land Grid Array) housing.</p>
+</div>
+<div class="section" id="hardware-setup">
+<h2>2. Hardware Setup<a class="headerlink" href="#hardware-setup" title="Permalink to this headline">¶</a></h2>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">This Hardware Setup serves as a quick startup kit, to help the user to run and understand the driver. It is for demonstration purposes, not supposed to be used in a production environment.</p>
+</div>
+<div class="section" id="hardware-components">
+<h3>2.1 Hardware Components:<a class="headerlink" href="#hardware-components" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Linux Host Board</li>
+<li>SMI240 sensor + Shuttleboard + Motherboard (acquirable from Bosch)</li>
+<li>connection cable (female to female)</li>
+<li>a mini SD card</li>
+</ol>
+</div>
+<div class="section" id="jumpers-on-the-mother-board">
+<h3>2.2 Jumpers on the mother board<a class="headerlink" href="#jumpers-on-the-mother-board" title="Permalink to this headline">¶</a></h3>
+<p>We need to change the default Jumpers.</p>
+<ol class="arabic simple">
+<li>Remove the jumper “Connection VDDIO” and put this junper to connect “VDD” and “VDDIO”</li>
+</ol>
+</div>
+<div class="section" id="cable-connection">
+<h3>2.3 Cable Connection<a class="headerlink" href="#cable-connection" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> .................................                      .................................
+.?^^^^^^^^^^~~~~~~~~^^^^^^^^^^^^^~?       VDD          !!^^^^^^^^^~~~~~~~~~~~~~~^^^^^^^^7~
+:?          Host Board            Y~~~~~~~~~~~~~~~~~~~~J~ 1    SMI240 Mother Board      !!
+:?                               .J      VDDIO         ?^                               !~
+:?                               .Y~~~~~~~~~~~~~~~~~~~~J^ 2                             !~
+:?                               .J                    7^                               !~
+:?                               .J       GND          7^                               !~
+:?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 3                             !~
+:?                               .J       MISO         ?^                               !~
+:?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 4                             !~
+:?                               .Y       MOSI         J~                               !~
+:?                               .J~~~~~~~~~~~~~~~~~~~~?~ 5                             !~
+:?                               .Y       SLK          J~                               !~
+:?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 6                             !~
+:?                               .J       CSB          7^                               !~
+:?                               .J~~~~~~~~~~~~~~~~~~~~7^ 7                             !~
+:?                               .J                    7^                               !~
+:?                               .J                    7^                               !~
+:?                               .J                    7^                               !~
+:?                               .Y                    J^                               !~
+:?                               .J                    ?^                               !~
+:?                                Y                    J^                               !~
+:J...............................:J                    7~...............................7~
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                    :^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="59%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">SMI240 Shuttle Pin</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>VDD</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>VDD IO</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>GND</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>MISO</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>MOSI</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td>SCLK</td>
+</tr>
+<tr class="row-even"><td>7</td>
+<td>CSB</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="first-startup">
+<h3>2.4 First Startup<a class="headerlink" href="#first-startup" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Write Linux Image (32 bit) to SD Card</li>
+<li>Insert SD Card Host Board and power on</li>
+<li>Enable SSH on Host Board</li>
+<li>Switch the Bus selection to SPI on mother board. The green LED shall be on</li>
+</ol>
+</div>
+</div>
+<div class="section" id="software-setup">
+<h2>3. Software Setup<a class="headerlink" href="#software-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="required-software">
+<h3>3.1 Required Software<a class="headerlink" href="#required-software" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Linux kernel (choose kernel branch rpi-5.15.y)  <a class="reference external" href="https://github.com/raspberrypi/linux">https://github.com/raspberrypi/linux</a></li>
+<li>SMI240 IIO Linux driver   <a class="reference external" href="https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO">https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO</a></li>
+<li>Linux environment (native or as VM)</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 20.04.1 LTS</p>
+</div>
+<ul class="simple">
+<li>Install Toolchain and dependences</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">crossbuild</span><span class="o">-</span><span class="n">essential</span><span class="o">-</span><span class="n">armhf</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">git</span> <span class="n">bc</span> <span class="n">bison</span> <span class="n">flex</span> <span class="n">libssl</span><span class="o">-</span><span class="n">dev</span> <span class="n">make</span> <span class="n">libc6</span><span class="o">-</span><span class="n">dev</span> <span class="n">libncurses5</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Clone Linux kernel</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">depth</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">branch</span> <span class="o">&lt;</span><span class="n">branch_name</span><span class="o">&gt;</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">raspberrypi</span><span class="o">/</span><span class="n">linux</span>
+</pre></div>
+</div>
+<p>We use kernel v5.15, replace &lt;branch_name&gt; with “rpi-5.15.y”</p>
+<ul class="simple">
+<li>Clone SMI240 IIO Linux driver</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">depth</span><span class="o">=</span><span class="mi">1</span>  <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">boschmemssolutions</span><span class="o">/</span><span class="n">SMI240</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">Driver</span><span class="o">-</span><span class="n">IIO</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="build-smi240-iio-linux-driver">
+<h3>3.2 Build SMI240 IIO Linux driver<a class="headerlink" href="#build-smi240-iio-linux-driver" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="integrate-linux-driver-into-linux-kernel">
+<h4>Integrate Linux driver into Linux kernel<a class="headerlink" href="#integrate-linux-driver-into-linux-kernel" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Copy source code into Linux kernel</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">/</span><span class="n">smi240</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">driver</span><span class="o">-</span><span class="n">iio</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">imu</span><span class="o">/</span><span class="n">smi240</span> <span class="n">linux</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">imu</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Add entry in imu Kconfig</li>
+</ul>
+<p>Open linux/drivers/iio/imu/Kconfig and add the SMI240 entry at bottom</p>
+<div class="highlight-kconfig notranslate"><div class="highlight"><pre><span></span><span class="k">source</span> <span class="s2">&quot;drivers/iio/imu/.../Kconfig&quot;</span>
+<span class="k">source</span> <span class="s2">&quot;drivers/iio/imu/smi240/Kconfig&quot;</span>
+<span class="k">source</span> <span class="s2">&quot;drivers/iio/imu/.../Kconfig&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Add entry in imu Makefile</li>
+</ul>
+<p>Open linux/drivers/iio/accel/Makefile and add the SMI240 entry at bottom</p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nv">obj-y</span> <span class="o">+=</span> smi240/
+<span class="nv">obj-y</span> <span class="o">+=</span> s.../
+</pre></div>
+</div>
+<ul class="simple">
+<li>Add devicetree overlay</li>
+</ul>
+<p>Create a devicetree overlay file “smi240-spi-overlay.dts” with the following content, and put it under “linux/arch/arm/boot/dts/overlays”</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Dependent on your hardware plattform and pin layout, the settings may be diffrent and an adaption to your target system may be required.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">dts</span><span class="o">-</span><span class="n">v1</span><span class="o">/</span><span class="p">;</span>
+<span class="o">/</span><span class="n">plugin</span><span class="o">/</span><span class="p">;</span>
+
+        <span class="o">/</span> <span class="p">{</span>
+        <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;brcm,bcm2835&quot;</span><span class="p">;</span>
+
+        <span class="n">fragment</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spidev0</span><span class="o">&gt;</span><span class="p">;</span>
+                <span class="n">__dormant__</span> <span class="p">{</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;disabled&quot;</span><span class="p">;</span>
+                <span class="p">};</span>
+        <span class="p">};</span>
+
+        <span class="n">fragment</span><span class="o">@</span><span class="mi">1</span> <span class="p">{</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spidev1</span><span class="o">&gt;</span><span class="p">;</span>
+                <span class="n">__dormant__</span> <span class="p">{</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;disabled&quot;</span><span class="p">;</span>
+                <span class="p">};</span>
+        <span class="p">};</span>
+
+        <span class="n">fragment</span><span class="o">@</span><span class="mi">2</span> <span class="p">{</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spi0</span><span class="o">&gt;</span><span class="p">;</span>
+                <span class="n">__dormant__</span> <span class="p">{</span>
+                        <span class="c1">#address-cells = &lt;1&gt;;</span>
+                        <span class="c1">#size-cells = &lt;0&gt;;</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
+
+                        <span class="n">smi240</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
+                                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;BOSCH,SMI240&quot;</span><span class="p">;</span>
+                                <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">10000000</span><span class="o">&gt;</span><span class="p">;</span>
+                                <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
+                        <span class="p">};</span>
+                <span class="p">};</span>
+        <span class="p">};</span>
+
+        <span class="n">__overrides__</span> <span class="p">{</span>
+                <span class="n">smi240</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">,</span> <span class="s2">&quot;=0=2&quot;</span><span class="p">;</span>
+        <span class="p">};</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Add entry in devicetree overlay Makefile</li>
+</ul>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nv">dtbo-$(CONFIG_ARCH_BCM2835)</span> <span class="o">+=</span> <span class="se">\</span>
+    ... <span class="se">\</span>
+    smi240-spi.dtbo <span class="se">\</span>
+    ... <span class="se">\</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="build-smi240-linux-driver-with-the-kernel">
+<h4>Build SMI240 Linux driver with the kernel<a class="headerlink" href="#build-smi240-linux-driver-with-the-kernel" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Config SMI240 Linux driver</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">linux</span>
+<span class="n">make</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm</span> <span class="n">CROSS_COMPILE</span><span class="o">=</span><span class="n">arm</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnueabihf</span><span class="o">-</span> <span class="n">bcm2709_defconfig</span>
+<span class="n">make</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm</span> <span class="n">CROSS_COMPILE</span><span class="o">=</span><span class="n">arm</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnueabihf</span><span class="o">-</span> <span class="n">menuconfig</span>
+</pre></div>
+</div>
+<p>Activate the options as following</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">To activate an option, press “y” on the option. A * appears, which means this option is activated as part of the kernel. Alternatively we can press “m” on the option. A “M” appears, which means this option is activated as kernel module (not as part of the kernel). Therefore we need to manually install the kernel module by ourself.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Device</span> <span class="n">Drivers</span> <span class="o">--&gt;</span>
+      <span class="o">&lt;*&gt;</span><span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">support</span>  <span class="o">---&gt;</span>
+              <span class="n">Inertial</span> <span class="n">measurement</span> <span class="n">units</span>  <span class="o">---&gt;</span>
+                      <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI240</span> <span class="n">Inertial</span> <span class="n">Measurement</span> <span class="n">Unit</span>
+                      <span class="p">(</span><span class="mi">1024</span><span class="p">)</span> <span class="n">configue</span> <span class="n">read</span> <span class="n">buffer</span> <span class="n">size</span> <span class="p">(</span><span class="n">NEW</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Build SMI240 Linux driver</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="o">-</span><span class="n">j4</span> <span class="n">ARCH</span><span class="o">=</span><span class="n">arm</span> <span class="n">CROSS_COMPILE</span><span class="o">=</span><span class="n">arm</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnueabihf</span><span class="o">-</span> <span class="n">zImage</span> <span class="n">modules</span> <span class="n">dtbs</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Build process takes quite long on the first time. To reduce the build time, we use the option “-j4”. This is the option to enable the build process to be executed parallelly in 4 threads. To improve the parallel execution, just give a big number e.g. “-j6”. How many parallel thread to use is dependent on your processor core number.</p>
+</div>
+<ul class="simple">
+<li>Install the kernel with SMI240 Linux driver in SD card</li>
+</ul>
+<p>insert the SD card (created in 2.3). A “boot” partition and a “rootfs” partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that</p>
+<blockquote>
+<div><p>/media/username/boot</p>
+<p>/media/username/rootfs</p>
+</div></blockquote>
+<p>write the kernel with SMI240 Linux driver in SD card</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export KERNEL=kernel7
+export SD_BOOT_PATH=/media/username/boot
+export SD_ROOTFS_PATH=/media/username/rootfs
+sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
+sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
+sudo cp arch/arm/boot/zImage $SD_BOOT_PATH/$KERNEL.img
+sudo cp arch/arm/boot/dts/*.dtb $SD_BOOT_PATH
+sudo cp arch/arm/boot/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
+sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
+</pre></div>
+</div>
+<ul class="simple">
+<li>adapt the boot configuraion</li>
+</ul>
+<p>open the “config.txt” in “boot” partition, and add the following entries</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment some or all of these to enable the optional hardware interfaces</span>
+<span class="n">dtparam</span><span class="o">=</span><span class="n">spi</span><span class="o">=</span><span class="n">on</span>
+<span class="n">dtoverlay</span><span class="o">=</span><span class="n">smi240</span><span class="o">-</span><span class="n">spi</span><span class="p">,</span><span class="n">smi240</span>
+</pre></div>
+</div>
+<p>Take the SD card out and put it back in board.</p>
+</div>
+</div>
+</div>
+<div class="section" id="work-with-smi240-linux-driver">
+<h2>4. Work with SMI240 Linux driver<a class="headerlink" href="#work-with-smi240-linux-driver" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Check driver initialization</li>
+</ul>
+<p>Power on the board. We firstly check if the driver was initialized properly</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmesg</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">SMI240</span>
+<span class="p">[</span>   <span class="mf">68.592919</span><span class="p">]</span> <span class="n">SMI240</span> <span class="n">Chip</span> <span class="n">ID</span><span class="p">:</span> <span class="mh">0x0024</span>
+<span class="p">[</span>   <span class="mf">68.593345</span><span class="p">]</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">Device</span> <span class="n">SMI240</span> <span class="n">initialized</span>
+</pre></div>
+</div>
+<p>If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor</p>
+<blockquote>
+<div>/sys/bus/iio/devices/iio:device0</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a “name” file in the devicefolder, that we can read to find out the sensor type</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span>
+<span class="n">cat</span> <span class="n">name</span>
+<span class="n">SMI240ACC</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Work with driver using command line</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To change sensor settings we need root access. It is not sufficient just using “sudo …” .</p>
+</div>
+<p>Check sensor type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
+<span class="n">sudo</span> <span class="n">su</span>
+<span class="n">cat</span> <span class="n">name</span>
+<span class="n">SMI240ACC</span>
+</pre></div>
+</div>
+<p>Read sensor current temperature.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_temp_object_raw</span>
+<span class="mi">19</span>
+</pre></div>
+</div>
+<p>Read accelerometer current value</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_accel_x_raw</span>
+<span class="mi">36</span>
+<span class="n">cat</span> <span class="n">in_accel_y_raw</span>
+<span class="o">-</span><span class="mi">19</span>
+<span class="n">cat</span> <span class="n">in_accel_z_raw</span>
+<span class="mi">2031</span>
+</pre></div>
+</div>
+<p>Read gyroscope current value</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_anglvel_x_raw</span>
+<span class="o">-</span><span class="mi">9</span>
+<span class="n">cat</span> <span class="n">in_anglvel_y_raw</span>
+<span class="o">-</span><span class="mi">9</span>
+<span class="n">cat</span> <span class="n">in_anglvel_z_raw</span>
+<span class="o">-</span><span class="mi">1</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Get synchronized accelerometer, gyroscope and temperature value</li>
+</ul>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">Synchronisation of sensor data is done by trigger and capture mechanism. Sensor measurement data and channel status of all channels (LF and HF) on one chip select line can be captured (stored sensor internally) at one point in time and read out at a later point in time</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_temp_accel_anglvel_capture</span>
+<span class="mi">19</span> <span class="mi">38</span> <span class="o">-</span><span class="mi">14</span> <span class="mi">2029</span> <span class="o">-</span><span class="mi">4</span> <span class="o">-</span><span class="mi">17</span> <span class="o">-</span><span class="mi">3</span>
+<span class="p">[</span><span class="n">temp</span> <span class="n">accX</span> <span class="n">accY</span> <span class="n">accZ</span> <span class="n">gyroX</span> <span class="n">gyroY</span> <span class="n">gyroZ</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This triggers the data capture and read the synchronized accelerometer, gyroscope and temperature value from sensor</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="bosch_smi230_IIO.html" class="btn btn-neutral float-left" title="Bosch SMI230 IIO driver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2022, Robert Bosch GmbH
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

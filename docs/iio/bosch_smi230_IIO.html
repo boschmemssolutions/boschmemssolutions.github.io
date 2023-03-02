@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bosch SMI240 IIO driver" href="bosch_smi240_IIO.html" />
     <link rel="prev" title="Bosch MEMS Sensor Linux Driver documentation" href="../index.html" /> 
 </head>
 
@@ -110,6 +111,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="bosch_smi240_IIO.html">Bosch SMI240 IIO driver</a></li>
 </ul>
 
             
@@ -485,7 +487,7 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 </pre></div>
 </div>
 <ul class="simple">
-<li>Change deveice tree overlay</li>
+<li>Change devicetree overlay</li>
 </ul>
 <p>Open linux/arch/arm/boot/dts/overlays/spi-rtc-overlay.dts and change the content as following</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">dts</span><span class="o">-</span><span class="n">v1</span><span class="o">/</span><span class="p">;</span>
@@ -637,14 +639,14 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <span class="p">[</span>    <span class="mf">8.492520</span><span class="p">]</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">Device</span> <span class="n">SMI230ACC</span> <span class="n">initialized</span>
 </pre></div>
 </div>
-<p>If the driver was installed properly, 2 folders will be created. A number of deveice files are created in the folders. which we can use to read/write data from/to the sensor</p>
+<p>If the driver was installed properly, 2 folders will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor</p>
 <blockquote>
 <div><p>/sys/bus/iio/devices/iio:device0</p>
 <p>/sys/bus/iio/devices/iio:device1</p>
 </div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a “name” file in the deveice folder, which we can read to find out the sensor type</p>
+<p class="last">Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a “name” file in the devicefolder, which we can read to find out the sensor type</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
 <span class="n">sudo</span> <span class="n">su</span>
@@ -735,7 +737,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </div>
 <div class="admonition hint">
 <p class="first admonition-title">Hint</p>
-<p class="last">Check the device number of SMI230ACC by reading “name” from deveice folder</p>
+<p class="last">Check the device number of SMI230ACC by reading “name” from devicefolder</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
 <span class="n">sudo</span> <span class="n">su</span>
@@ -1019,7 +1021,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </div>
 <div class="admonition hint">
 <p class="first admonition-title">Hint</p>
-<p class="last">Check the device number of SMI230ACC by reading “name” from deveice folder</p>
+<p class="last">Check the device number of SMI230ACC by reading “name” from devicefolder</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
 <span class="n">sudo</span> <span class="n">su</span>
@@ -1076,6 +1078,8 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="bosch_smi240_IIO.html" class="btn btn-neutral float-right" title="Bosch SMI240 IIO driver" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../index.html" class="btn btn-neutral float-left" title="Bosch MEMS Sensor Linux Driver documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
