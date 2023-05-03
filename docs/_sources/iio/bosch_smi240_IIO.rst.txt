@@ -6,7 +6,7 @@ Bosch SMI240 IIO driver
 ===========
 
 The driver is intended to work on Bosch SMI240 Inertial Measurement Unit for Non-Safety Automotive Applications.
-The SMI240 is a combined three axis angular rate and three axis acceleration sensor module with a measurement range of +/-300°/sand up to 16g. SMI240 is a 6 DoF (Degrees of Freedom) sensor module providing acceleration and angular rate signals via a digital interface (SPI). The sensor consists of two Micro Electro Mechanical System (MEMS) elements and a sensor readoutASIC. The ASIC contains analogue front ends and a digital structure for signal processing and communication interface. The sensor module is available in a LGA (Land Grid Array) housing.
+The SMI240 is a combined three axis angular rate and three axis acceleration sensor module with a measurement range of +/-300°/s and up to 16g. SMI240 is a 6 DoF (Degrees of Freedom) sensor module providing acceleration and angular rate signals via a digital interface (SPI). The sensor consists of two Micro Electro Mechanical System (MEMS) elements and a sensor readoutASIC. The ASIC contains analogue front ends and a digital structure for signal processing and communication interface. The sensor module is available in a LGA (Land Grid Array) housing.
 
 2. Hardware Setup
 ====================
@@ -19,7 +19,7 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
 #. Linux Host Board
 #. SMI240 sensor + Shuttleboard + Motherboard (acquirable from Bosch)
 #. connection cable (female to female)
-#. a mini SD card
+#. A micro SD card (if required by the host board)
 
 
 2.2 Jumpers on the mother board
@@ -27,7 +27,11 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
 
 We need to change the default Jumpers. 
 
-#. Remove the jumper "Connection VDDIO" and put this junper to connect "VDD" and "VDDIO"
+- Remove the jumper "Connection VDDIO" and put this jumper to connect "VDD" and "VDDIO"
+
+Make sure that
+
+- Both BUS_ID_0 and BUS_ID_1 are connected to GND
 
 
    
@@ -54,9 +58,9 @@ We need to change the default Jumpers.
     :?                               .J~~~~~~~~~~~~~~~~~~~~7^ 7                             !~  
     :?                               .J                    7^                               !~
     :?                               .J                    7^                               !~
-    :?                               .J                    7^                               !~  
+    :?                               .J                    7^                      BUS_ID_0 !~~GND  
     :?                               .Y                    J^                               !~         
-    :?                               .J                    ?^                               !~         
+    :?                               .J                    ?^                      BUS_ID_1 !~~GND         
     :?                                Y                    J^                               !~         
     :J...............................:J                    7~...............................7~         
      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                    :^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.
@@ -79,7 +83,6 @@ SMI240 Shuttle Pin	Function
 #. Write Linux Image (32 bit) to SD Card
 #. Insert SD Card Host Board and power on
 #. Enable SSH on Host Board
-#. Switch the Bus selection to SPI on mother board. The green LED shall be on
 
    
 3. Software Setup
@@ -89,9 +92,12 @@ SMI240 Shuttle Pin	Function
 3.1 Required Software
 ----------------------
 
-#. Linux kernel (choose kernel branch rpi-5.15.y)  https://github.com/raspberrypi/linux
+#. Host Board Linux (kernel version 5.15) 
 #. SMI240 IIO Linux driver   https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO
-#. Linux environment (native or as VM) 
+#. Linux development environment (native or as VM) 
+
+.. hint:: Most board manufacturer provides customized Linux distribution for their boards. Consult with your board manufacturer. And download the Linux distribution for your board, if available.
+
 
 .. note:: We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 20.04.1 LTS
 
@@ -283,7 +289,8 @@ Take the SD card out and put it back in board.
 4. Work with SMI240 Linux driver
 =================================
 
-- Check driver initialization
+4.1 Preparation
+--------------------------------
 
 Power on the board. We firstly check if the driver was initialized properly
 
@@ -305,52 +312,46 @@ If the driver was installed properly, a folder will be created. A number of devi
 
 	cd /sys/bus/iio/devices/iio:device0
 	cat name
-	SMI240ACC
+	SMI240
 	
 
-- Work with driver using command line 
-
+Work with driver using command line
+ 
 .. note:: To change sensor settings we need root access. It is not sufficient just using "sudo ..." .
-
-Check sensor type
 
 ::
 
-	cd /sys/bus/iio/devices/iio:device1
-	sudo su
-	cat name
-	SMI240ACC
+   sudo su
+
 	
-Read sensor current temperature.
+4.2 Read sensor temperature
+----------------------------
 
 ::
 
 	cat in_temp_object_raw
 	19
 
-Read accelerometer current value 
+4.3 Read accelerometer value 
+-----------------------------
 
 ::
 
-	cat in_accel_x_raw
-	36
-	cat in_accel_y_raw
-	-19
-	cat in_accel_z_raw
-	2031
+	cat in_accel_x\&y\&z_raw
+	19 -12 1997
+	[x  y   z]
   
-Read gyroscope current value
+4.4 Read gyroscope current value
+---------------------------------
 
 ::
 
-	cat in_anglvel_x_raw
-	-9  
-	cat in_anglvel_y_raw
-	-9
-	cat in_anglvel_z_raw
-	-1
+	cat in_anglvel_x\&y\&z_raw
+	-24 21 -15
+	[x  y   z]
 
-- Get synchronized accelerometer, gyroscope and temperature value
+4.5 Get synchronized accelerometer, gyroscope and temperature value
+---------------------------------------------------------------------
 
 .. hint:: Synchronisation of sensor data is done by trigger and capture mechanism. Sensor measurement data and channel status of all channels (LF and HF) on one chip select line can be captured (stored sensor internally) at one point in time and read out at a later point in time
 
@@ -362,3 +363,147 @@ Read gyroscope current value
 
 This triggers the data capture and read the synchronized accelerometer, gyroscope and temperature value from sensor
 
+4.6 Signal filtering
+---------------------
+
+The SMI240 offers two filters (400Hz and 50Hz) which are configurable by the user
+
+check available ACC filter option
+
+::
+
+   cat in_accel_filter_low_pass_3db_frequency_available
+   50 400
+   
+check available GYR filter option 
+
+::
+
+   cat in_anglvel_filter_low_pass_3db_frequency_available
+   50 400
+
+check current ACC filter option
+
+::
+
+   cat in_accel_filter_low_pass_3db_frequency
+   400
+
+Make sure that you have root access. if not using "sudo su"
+   
+set ACC filter
+
+::
+
+   echo 50 > in_accel_filter_low_pass_3db_frequency
+   cat in_accel_filter_low_pass_3db_frequency
+   50
+   
+check current GYR filter option
+
+::
+
+   cat in_anglvel_filter_low_pass_3db_frequency
+   400
+   
+set GYR filter
+
+::
+
+   echo 50 > in_anglvel_filter_low_pass_3db_frequency
+   cat in_anglvel_filter_low_pass_3db_frequency
+   50
+   
+4.7 Self Test
+--------------
+
+The sensor module provides an electro-mechanical self-test (BITE) which is bidirectional, deflecting the sensing element in positive and negative measurement direction. The BITE tests verifies the functionality of the MEMS elements and ASIC signal path. User can define BITE repetitions between 1 and 8.
+
+check current BITE repetitions
+
+::
+
+   cat bite_repetitions
+   3
+
+set BITE repetitions
+
+::
+
+   echo 8 > bite_repetitions
+   cat bite_repetitions
+   8
+   
+start self test
+
+::
+
+   cat self_test
+   self test success.
+   
+4.8 Soft reset
+---------------
+
+trigger soft reset
+
+::
+
+   cat soft_reset
+   soft reset performed.
+
+
+4.9 Sign of channels
+----------------------
+
+User is able to invert the sign of each ACC/GYR channel.
+
+check current sign of channels
+
+::
+
+   cat sign_of_channels
+   ax:0,ay:0,az:0,gx:0,gy:0,gz:0
+	
+"ax:0" -> sign of accel x axis is normal (not inverted)
+
+invert sign of one singel channel
+
+::
+
+   echo ay:1 > sign_of_channels
+   cat sign_of_channels
+   ax:0,ay:1,az:0,gx:0,gy:0,gz:0
+
+"echo ay:1" -> invert sign of accel y axis
+
+
+clear the sign inversion for one singel channel
+
+::
+
+   echo ay:0 > sign_of_channels
+   cat sign_of_channels
+   ax:0,ay:0,az:0,gx:0,gy:0,gz:0
+   
+"echo ay:0" -> clear sign inversion of accel y axis
+
+
+invert sign of several channels (up to 6) at once
+
+::
+
+   echo az:1,gx:1,gy:1 > sign_of_channels
+   cat sign_of_channels
+   ax:0,ay:0,az:1,gx:1,gy:1,gz:0
+   
+   
+clear the sign inversion of several channels (up to 6) at once
+
+::
+
+   echo ax:0,ay:0,az:0,gx:0,gy:0,gz:0 > sign_of_channels
+   cat sign_of_channels
+   ax:0,ay:0,az:0,gx:0,gy:0,gz:0
+   
+   
+   
