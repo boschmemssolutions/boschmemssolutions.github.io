@@ -1,1 +1,1 @@
-# Bosch MEMS Sensor Linux Driver documentation
+# Bosch MEMS Sensor Host Driver documentation

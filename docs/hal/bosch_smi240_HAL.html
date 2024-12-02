@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bosch SMI240 Sensor HAL &mdash; Bosch MEMS Sensor Linux Driver  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bosch MEMS Android HAL" href="bosch_MEMS-Android-HAL.html" />
+    <link rel="prev" title="Bosch SMI330 IIO driver" href="../iio/bosch_smi330_IIO.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bosch MEMS Sensor Linux Driver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../iio/bosch_smi230_IIO.html">Bosch SMI230 IIO driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../iio/bosch_smi240_IIO.html">Bosch SMI240 IIO driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../iio/bosch_smi330_IIO.html">Bosch SMI330 IIO driver</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bosch SMI240 Sensor HAL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#integration-steps">3. Integration Steps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#linux-kernel-with-smi240-iio-driver">3.1 Linux Kernel with SMI240 IIO driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#smi240-sensor-hal-integration">3.2 SMI240 Sensor HAL Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#testing-and-verification">4. Testing and Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bosch_MEMS-Android-HAL.html">Bosch MEMS Android HAL</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bosch MEMS Sensor Linux Driver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Bosch SMI240 Sensor HAL</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/hal/bosch_smi240_HAL.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bosch-smi240-sensor-hal">
+<h1>Bosch SMI240 Sensor HAL<a class="headerlink" href="#bosch-smi240-sensor-hal" title="Link to this heading"></a></h1>
+<section id="introduction">
+<h2>1. Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>The SMI240 Sensor HAL (Hardware Abstraction Layer) implementation shall be used with the
+<a class="reference external" href="https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO">SMI240 kernel driver</a>
+based on the <a class="reference external" href="https://www.kernel.org/doc/html/v5.15/driver-api/iio/index.html">Linux IIO subsystem</a>.</p>
+</section>
+<section id="prerequisites">
+<h2>2. Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Familiarity with Linux kernel compilation and configuration</p></li>
+<li><p>Basic knowledge of Android development and AOSP</p></li>
+<li><p>The Android source tree is downloaded</p></li>
+</ul>
+</section>
+<section id="integration-steps">
+<h2>3. Integration Steps<a class="headerlink" href="#integration-steps" title="Link to this heading"></a></h2>
+<section id="linux-kernel-with-smi240-iio-driver">
+<h3>3.1 Linux Kernel with SMI240 IIO driver<a class="headerlink" href="#linux-kernel-with-smi240-iio-driver" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>The <a class="reference external" href="https://boschmemssolutions.github.io/iio/bosch_smi240_IIO.html">SMI240 IIO driver documentation</a>
+decribes how to build the Linux kernel.</p></li>
+<li><p>Integrate the kernel and build the AOSP project to ensure the Linux kernel is included in the build.</p></li>
+</ol>
+</section>
+<section id="smi240-sensor-hal-integration">
+<h3>3.2 SMI240 Sensor HAL Integration<a class="headerlink" href="#smi240-sensor-hal-integration" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Adapt your manifest file or manually clone the
+<a class="reference external" href="https://github.com/boschmemssolutions/SMI240-Android-HAL">SMI240 Sensor HAL</a> repository
+into the desired AOSP project’s directory, e.g. <code class="docutils literal notranslate"><span class="pre">hardware/bosch/sensors/</span></code>.</p></li>
+<li><p>Add the desired sensor HAL service, e.g. by modifying the device makefile (e.g., <code class="docutils literal notranslate"><span class="pre">device/manufacturer/device_name/device.mk</span></code>):</p></li>
+</ol>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># For sensor hal 2.0</span>
+<span class="nv">PRODUCT_PACKAGES</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>android.hardware.sensors@2.0-service.bosch
+<span class="c"># For sensor hal 2.1</span>
+<span class="nv">PRODUCT_PACKAGES</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>android.hardware.sensors@2.1-service.bosch
+<span class="c"># For sensor hal AIDL</span>
+<span class="nv">PRODUCT_PACKAGES</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>android.hardware.sensors@aidl-service.bosch
+<span class="c"># For sensor multi hal 2.X</span>
+<span class="nv">PRODUCT_PACKAGES</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>android.hardware.sensors@2.X-service.multihal<span class="w"> </span>bosch.sensor.multihal
+<span class="nv">PRODUCT_COPY_FILES</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>hardware/bosch/sensors/multihal/hals.conf:<span class="k">$(</span>TARGET_COPY_OUT_VENDOR<span class="k">)</span>/etc/sensors/hals.conf
+<span class="c"># For sensor multi hal AIDL</span>
+<span class="nv">PRODUCT_PACKAGES</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>android.hardware.sensors-service.multihal<span class="w"> </span>bosch.sensor.multihal
+<span class="nv">PRODUCT_COPY_FILES</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>hardware/bosch/sensors/multihal/hals.conf:<span class="k">$(</span>TARGET_COPY_OUT_VENDOR<span class="k">)</span>/etc/sensors/hals.conf
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Modify the sepolicy file_contexts file (e.g., <code class="docutils literal notranslate"><span class="pre">device/manufacturer/device_name/sepolicy/file_contexts</span></code>) by adding the following lines, depending on the HAL version used:</p></li>
+</ol>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># For sensor hal 2.0</span>
+<span class="nf">/vendor/bin/hw/android\.hardware\.sensors@2\.0-service\.bosch u</span><span class="o">:</span><span class="n">object_r</span>:<span class="n">hal_sensors_default_exec</span>:<span class="n">s</span>0
+<span class="c"># For sensor hal 2.1</span>
+<span class="nf">/vendor/bin/hw/android\.hardware\.sensors@2\.1-service\.bosch u</span><span class="o">:</span><span class="n">object_r</span>:<span class="n">hal_sensors_default_exec</span>:<span class="n">s</span>0
+<span class="c"># For sensor hal AIDL</span>
+<span class="nf">/vendor/bin/hw/android\.hardware\.sensors@aidl-service\.bosch u</span><span class="o">:</span><span class="n">object_r</span>:<span class="n">hal_sensors_default_exec</span>:<span class="n">s</span>0
+<span class="c"># For sensor multi hal 2.X</span>
+<span class="nf">/vendor/bin/hw/android\.hardware\.sensors@2\.X-service\.multihal u</span><span class="o">:</span><span class="n">object_r</span>:<span class="n">hal_sensors_default_exec</span>:<span class="n">s</span>0
+<span class="c"># For sensor multi hal AIDL</span>
+<span class="nf">/vendor/bin/hw/android\.hardware\.sensors-service\.multihal u</span><span class="o">:</span><span class="n">object_r</span>:<span class="n">hal_sensors_default_exec</span>:<span class="n">s</span>0
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Build the AOSP project to ensure the SMI240 Sensor HAL compiles successfully.</p></li>
+</ol>
+</section>
+</section>
+<section id="testing-and-verification">
+<h2>4. Testing and Verification<a class="headerlink" href="#testing-and-verification" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Flash the built AOSP image onto your target device.</p></li>
+<li><p>Verify that the SMI240 IIO driver was installed properly by checking the <code class="docutils literal notranslate"><span class="pre">/sys/bus/iio/devices/iio:device0</span></code> directory.</p></li>
+<li><p>Verify that the SMI240 Sensor HAL is functioning correctly by executing <code class="docutils literal notranslate"><span class="pre">adb</span> <span class="pre">shell</span> <span class="pre">dumpsys</span> <span class="pre">sensorservice</span></code>.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../iio/bosch_smi330_IIO.html" class="btn btn-neutral float-left" title="Bosch SMI330 IIO driver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bosch_MEMS-Android-HAL.html" class="btn btn-neutral float-right" title="Bosch MEMS Android HAL" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Robert Bosch GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

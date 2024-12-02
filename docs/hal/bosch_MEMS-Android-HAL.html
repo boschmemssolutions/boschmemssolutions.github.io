@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bosch MEMS Android HAL &mdash; Bosch MEMS Sensor Linux Driver  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Bosch SMI240 Sensor HAL" href="bosch_smi240_HAL.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Bosch MEMS Sensor Linux Driver
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../iio/bosch_smi230_IIO.html">Bosch SMI230 IIO driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../iio/bosch_smi240_IIO.html">Bosch SMI240 IIO driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../iio/bosch_smi330_IIO.html">Bosch SMI330 IIO driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bosch_smi240_HAL.html">Bosch SMI240 Sensor HAL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bosch MEMS Android HAL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">1. Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#architecture-overview">1.1 Architecture Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#integrate-linux-driver-into-android-kernel">3. Integrate Linux driver into Android Kernel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#preparation-for-build">3.1 Preparation for build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extend-device-tree">3.2 Extend device tree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-and-replace-the-kernel">3.3 Build and replace the kernel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#integrate-sensor-hal-into-android-platform">4. Integrate Sensor HAL into Android Platform</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">4.1 Preparation for build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-sensor-hal">4.2 Build Sensor HAL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extend-sepolicy">4.3 Extend sepolicy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">4.3 Extend sepolicy</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bosch MEMS Sensor Linux Driver</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Bosch MEMS Android HAL</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/hal/bosch_MEMS-Android-HAL.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bosch-mems-android-hal">
+<h1>Bosch MEMS Android HAL<a class="headerlink" href="#bosch-mems-android-hal" title="Link to this heading"></a></h1>
+<section id="introduction">
+<h2>1. Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>The MEMS Android HAL (Hardware Abstraction Layer) implementation shall be used with the
+<a class="reference external" href="https://sourcecode.socialcoding.bosch.com/projects/BSEHSW/repos/bosch-mems-android-hal">Bosch MEMS Android HAL driver</a>.</p>
+<section id="architecture-overview">
+<h3>1.1 Architecture Overview<a class="headerlink" href="#architecture-overview" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>       Android Apps
+           |
+       Android HAL
+           |
+     Bosch Sensor HAL
+           |
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    sysfs       dev
+      \          /
+     iio-subsystem
+           |
+      bosch-driver
+           |
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         Hardware
+</pre></div>
+</div>
+</section>
+</section>
+<section id="prerequisites">
+<h2>2. Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Set up an Android build environment as described in the <a class="reference external" href="https://source.android.com/setup/build/initializing">Set up for Android Open Source Project (AOSP) documentation</a></p></li>
+<li><p>Download the Android source tree as described in the <a class="reference external" href="https://source.android.com/setup/build/downloading">Download Android Source documentation</a></p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Building the Android platform requires at least 32 GB RAM. The download and build process can take several hours and consumes approximately 300 GB of disk space.</p>
+</div>
+<p>It is recommended to use the following versions: android-13.0.0.
+All the Android distributions provide the platform and kernel in 2 different repositories. Therefore we need to firstly create 2 working folders for both platform and kernel.</p>
+<ul class="simple">
+<li><p>download kernel source</p></li>
+<li><p>go to the kernel folder</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">repo</span> <span class="n">init</span> <span class="o">-</span><span class="n">u</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">android</span><span class="o">.</span><span class="n">googlesource</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">kernel</span><span class="o">/</span><span class="n">manifest</span> <span class="o">-</span><span class="n">b</span> <span class="n">common</span><span class="o">-</span><span class="n">android13</span><span class="o">-</span><span class="mf">5.15</span>
+<span class="n">repo</span> <span class="n">sync</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>download platform source</p></li>
+<li><p>go to the platform folder</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">repo</span> <span class="n">init</span> <span class="o">-</span><span class="n">u</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">android</span><span class="o">.</span><span class="n">googlesource</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">platform</span><span class="o">/</span><span class="n">manifest</span> <span class="o">-</span><span class="n">b</span> <span class="n">android</span><span class="o">-</span><span class="mf">13.0.0</span><span class="n">_r75</span> <span class="o">--</span><span class="n">depth</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">o</span> <span class="o">.</span><span class="n">repo</span><span class="o">/</span><span class="n">local_manifests</span><span class="o">/</span><span class="n">manifest_brcm_rpi4</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">L</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">raspberry</span><span class="o">-</span><span class="n">vanilla</span><span class="o">/</span><span class="n">android_local_manifest</span><span class="o">/</span><span class="n">android</span><span class="o">-</span><span class="mf">13.0</span><span class="o">/</span><span class="n">manifest_brcm_rpi4</span><span class="o">.</span><span class="n">xml</span> <span class="o">--</span><span class="n">create</span><span class="o">-</span><span class="n">dirs</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">o</span> <span class="o">.</span><span class="n">repo</span><span class="o">/</span><span class="n">local_manifests</span><span class="o">/</span><span class="n">remove_projects</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">L</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="o">.</span><span class="n">githubusercontent</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">raspberry</span><span class="o">-</span><span class="n">vanilla</span><span class="o">/</span><span class="n">android_local_manifest</span><span class="o">/</span><span class="n">android</span><span class="o">-</span><span class="mf">13.0</span><span class="o">/</span><span class="n">remove_projects</span><span class="o">.</span><span class="n">xml</span>
+<span class="n">repo</span> <span class="n">sync</span>
+</pre></div>
+</div>
+</section>
+<section id="integrate-linux-driver-into-android-kernel">
+<h2>3. Integrate Linux driver into Android Kernel<a class="headerlink" href="#integrate-linux-driver-into-android-kernel" title="Link to this heading"></a></h2>
+<section id="preparation-for-build">
+<h3>3.1 Preparation for build<a class="headerlink" href="#preparation-for-build" title="Link to this heading"></a></h3>
+<p>Go to the “common” folder. this is the root folder of the kernel source. We use smi230 linux driver as example.</p>
+<ul class="simple">
+<li><p>Copy the Linux driver in drivers/iio/imu</p></li>
+<li><p>add source “drivers/iio/imu/smi230/Kconfig” in Kconfig</p></li>
+<li><p>add obj-y += smi230/ in Makefile</p></li>
+</ul>
+<p>Activate Sensor in kernel</p>
+<p>Now we start menuconfig to activate sensor driver.</p>
+<ul class="simple">
+<li><p>load the standard kernel configuration for your hardware. Dependent on the HW, you can find the stand configuration under build.config.xxx.  Example: for the Qualcomm db845c board, the standard configuration is db845c_gki_defconfig defined in build.config.db845c.  If you go to arch/arm64/configs the db845c_gki_defconfig is not there.  This need to be firstly created by scripts/kconfig/merge_config.sh -m -r arch/arm64/configs/gki_defconfig arch/arm64/configs/db845c_gki.fragment. This will create .config at the android root folder. Rename to db845c_gki_defconfig and copy to arch/arm64/configs/</p></li>
+<li><p>load the standard kernel configuration for your hardware.  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- db845c_gki_defconfig</p></li>
+<li><p>start menuconfig to activate sensor driver make  ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig activate the sensor driver , save and exit.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;*&gt;</span><span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">support</span>  <span class="o">---&gt;</span>
+            <span class="n">Inertial</span> <span class="n">measurement</span> <span class="n">units</span>  <span class="o">---&gt;</span>
+                    <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230</span> <span class="n">Inertial</span> <span class="n">Measurement</span> <span class="n">Unit</span>
+</pre></div>
+</div>
+</section>
+<section id="extend-device-tree">
+<h3>3.2 Extend device tree<a class="headerlink" href="#extend-device-tree" title="Link to this heading"></a></h3>
+<p>extend the device tree with the sensor entries. This part is very HW specific. Please consult your HW vendor, how to do it properly for your HW.</p>
+<p>If using spi, add the following device tree entry to spi sub tree.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">smi230acc</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
+    <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230acc&quot;</span><span class="p">;</span>
+    <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">10000000</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span> <span class="n">IRQ_TYPE_EDGE_RISING</span> <span class="o">*/</span>
+    <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;ACC_INT&quot;</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="n">smi230gyro</span><span class="o">@</span><span class="mi">1</span> <span class="p">{</span>
+    <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230gyro&quot;</span><span class="p">;</span>
+    <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">10000000</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span> <span class="n">IRQ_TYPE_EDGE_RISING</span> <span class="o">*/</span>
+    <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;GYRO_INT&quot;</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>If using i2c, add the following device tree entry to i2c sub tree.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">smi230acc</span><span class="p">:</span> <span class="n">smi230acc</span><span class="o">@</span><span class="mi">18</span> <span class="p">{</span>
+            <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230acc&quot;</span><span class="p">;</span>
+            <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x18</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span> <span class="n">IRQ_TYPE_EDGE_RISING</span> <span class="o">*/</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;ACC_INT&quot;</span><span class="p">;</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
+    <span class="p">};</span>
+<span class="n">smi230gyro</span><span class="p">:</span> <span class="n">smi230gyro</span><span class="o">@</span><span class="mi">68</span> <span class="p">{</span>
+            <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230gyro&quot;</span><span class="p">;</span>
+            <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x68</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span> <span class="n">IRQ_TYPE_EDGE_RISING</span> <span class="o">*/</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;GYRO_INT&quot;</span><span class="p">;</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
+    <span class="p">};</span>
+</pre></div>
+</div>
+</section>
+<section id="build-and-replace-the-kernel">
+<h3>3.3 Build and replace the kernel<a class="headerlink" href="#build-and-replace-the-kernel" title="Link to this heading"></a></h3>
+<p>Now build the kernel make -j6 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image modules dtbs</p>
+<p>When the build process finished, we need to replace the prebuilt kernel with our new built kernel. This can be done in 2 different ways</p>
+<ul class="simple">
+<li><p>export TARGET_PREBUILT_KERNEL=”Path to my zImage” and then build the platform.</p></li>
+<li><p>find out the location of the prebuilt kernel in $(ANDROID_ROOT)/device/&lt;my device&gt;/device.mk and copy and replace the prebuilt kernel with our new built kernel</p></li>
+</ul>
+</section>
+</section>
+<section id="integrate-sensor-hal-into-android-platform">
+<h2>4. Integrate Sensor HAL into Android Platform<a class="headerlink" href="#integrate-sensor-hal-into-android-platform" title="Link to this heading"></a></h2>
+<p>In the last section we extend the android kernel with our sensor driver. Now we need to integrate the sensor HAL into the android platform.</p>
+<section id="id1">
+<h3>4.1 Preparation for build<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>create folder $(ANDROID_ROOT)/hardware/bosch/sensors and copy all the sensor HAL source code there.</p></li>
+<li><p>open $(ANDROID_ROOT)/device/&lt;my device&gt;/device.mk and add the following content dependent on which HAL type you are going to use.</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Be careful with the HAL Type and your Android version. HIDL HALs is not supported any more from android14. If you use Android14 or above, only the AIDL HALs shall be used.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># For sensor hal 2.0
+PRODUCT_PACKAGES += android.hardware.sensors@2.0-service.bosch
+
+# For sensor hal 2.1
+PRODUCT_PACKAGES += android.hardware.sensors@2.1-service.bosch
+
+# For sensor hal AIDL
+PRODUCT_PACKAGES += android.hardware.sensors@aidl-service.bosch
+
+# For sensor multi hal 2.X
+PRODUCT_PACKAGES += android.hardware.sensors@2.X-service.multihal.bosch
+PRODUCT_COPY_FILES += hardware/bosch/sensors/multihal/common/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
+
+# For sensor multi hal AIDL
+PRODUCT_PACKAGES += android.hardware.sensors@aidl-service.multihal.bosch
+PRODUCT_COPY_FILES += hardware/bosch/sensors/multihal/common/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
+</pre></div>
+</div>
+</section>
+<section id="build-sensor-hal">
+<h3>4.2 Build Sensor HAL<a class="headerlink" href="#build-sensor-hal" title="Link to this heading"></a></h3>
+<p>Now we can build the system. Prepare the build environment</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>source build/envsetup.sh
+
+lunch aosp-your-lunch-choice-userdebug
+
+There is dependency between the SW module. To build the sensor HAL we need to firstly the dependencies.
+
+    mmma hardware/bosch/sensors/hwctl
+    mmma hardware/bosch/sensors/core
+    mmma hardware/bosch/sensors/sensors
+    make bootimage systemimage vendorimage -j$(nproc)
+</pre></div>
+</div>
+<p>Check if the HAL service binary is built properly under $(ANDROID_ROOT)/out/target/product/rpi4/vendor/bin/hw</p>
+</section>
+<section id="extend-sepolicy">
+<h3>4.3 Extend sepolicy<a class="headerlink" href="#extend-sepolicy" title="Link to this heading"></a></h3>
+<p>In Android without explicit permission, the execution is always forbidden.</p>
+<p>Add the following content in $(ANDROID_ROOT)/device/&lt;my device&gt;/sepolicy/file_contexts</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#Bosch Sensor HAL
+
+/vendor/bin/hw/android\.hardware\.sensors@2\.0-service\.bosch u:object_r:hal_sensors_default_exec:s0
+
+/vendor/bin/hw/android\.hardware\.sensors@2\.1-service\.bosch u:object_r:hal_sensors_default_exec:s0
+
+/vendor/bin/hw/android\.hardware\.sensors@aidl-service\.bosch u:object_r:hal_sensors_default_exec:s0
+
+/vendor/bin/hw/android\.hardware\.sensors@2\.X-service\.multihal\.bosch u:object_r:hal_sensors_default_exec:s0
+
+/vendor/bin/hw/android\.hardware\.sensors@aidl-service\.multihal\.bosch u:object_r:hal_sensors_default_exec:s0
+
+make bootimage systemimage vendorimage -j$(nproc)
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>4.3 Extend sepolicy<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">adb</span> <span class="n">connect</span>
+<span class="n">adb</span> <span class="n">shell</span>
+<span class="n">service</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">sensor</span>
+</pre></div>
+</div>
+<p>the android.hardware.sensors.ISensors.default service shall be started properly.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bosch_smi240_HAL.html" class="btn btn-neutral float-left" title="Bosch SMI240 Sensor HAL" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Robert Bosch GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

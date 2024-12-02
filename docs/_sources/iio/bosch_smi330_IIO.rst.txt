@@ -1,0 +1,913 @@
+==============================
+Bosch SMI330 IIO driver
+==============================
+
+1. Overview
+===========
+
+The driver is intended to work on Bosch SMI330 Inertial Sensor for Non-Safety Automotive Applications.
+The SMI330 is a highly integrated, low power inertial measurement unit (IMU) that combines precise acceleration and
+angular rate (gyroscopic) measurement with intelligent on-chip motion-triggered interrupt features.
+
+2. Hardware Setup
+==================
+
+.. important:: This Hardware Setup serves as a quick startup kit, to help the user to run and understand the driver. It is for demonstration purposes, not supposed to be used in a production environment.
+
+2.1 Hardware Components:
+-------------------------
+
+#. Linux Host Board
+#. SMI330 sensor + Shuttleboard + Motherboard (acquirable from Bosch)
+#. Connection cable (female to female)
+#. A micro SD card (if required by the host board)
+
+   
+2.2 Cable Connection
+---------------------
+
+.. collapse:: SPI
+
+    ::
+    
+        .................................                      .................................          
+        .?^^^^^^^^^^~~~~~~~~^^^^^^^^^^^^^~?       VDD          !!^^^^^^^^^~~~~~~~~~~~~~~^^^^^^^^7~         
+        :?          Host Board            Y~~~~~~~~~~~~~~~~~~~~J~ 1    SMI330 Mother Board      !!         
+        :?                               .J      VDDIO         ?^                               !~         
+        :?                               .Y~~~~~~~~~~~~~~~~~~~~J^ 2                             !~         
+        :?                               .J                    7^                               !~         
+        :?                               .J       GND          7^                               !~         
+        :?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 3                             !~         
+        :?                               .J       MISO         ?^                               !~         
+        :?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 4                             !~         
+        :?                               .Y       MOSI         J~                               !~         
+        :?                               .J~~~~~~~~~~~~~~~~~~~~?~ 5                             !~         
+        :?                               .Y       SLK          J~                               !~         
+        :?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 6                             !~         
+        :?                               .J       CSB          7^                               !~      
+        :?                               .J~~~~~~~~~~~~~~~~~~~~7^ 7                             !~  
+        :?                               .J                    7^                               !~
+        :?                               .J                    7^                               !~
+        :?                               .J                    7^                            20 !~ INT2  
+        :?                               .Y                    J^                               !~         
+        :?                               .J                    ?^                            21 !~ INT1         
+        :?                                Y                    J^                               !~         
+        :J...............................:J                    7~...............................7~         
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                    :^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.
+
+    ==================  ========
+    SMI330 Shuttle Pin  Function
+    ==================  ========
+    1                   VDD
+    2                   VDD IO
+    3                   GND
+    4                   MISO
+    5                   MOSI
+    6                   SCLK
+    7                   CSB
+    20                  INT2
+    21                  INT1
+    ==================  ========
+
+.. collapse:: I2C
+
+    ::
+    
+        .................................                      .................................          
+        .?^^^^^^^^^^~~~~~~~~^^^^^^^^^^^^^~?       VDD          !!^^^^^^^^^~~~~~~~~~~~~~~^^^^^^^^7~         
+        :?          Host Board            Y~~~~~~~~~~~~~~~~~~~~J~ 1    SMI330 Mother Board      !!         
+        :?                               .J      VDDIO         ?^                               !~         
+        :?                               .Y~~~~~~~~~~~~~~~~~~~~J^ 2                             !~         
+        :?                               .J                    7^                               !~         
+        :?                               .J       GND          7^                               !~         
+        :?                               .Y~~~~~~~~~~~~~~~~~~~~J~ 3                             !~         
+        :?                               .J                    ?^                               !~         
+        :?                               .Y                    J~                               !~         
+        :?                               .Y                    J~                               !~         
+        :?                               .J                    ?~                               !~         
+        :?                               .Y                    J~                               !~         
+        :?                               .Y                    J~                               !~         
+        :?                               .J~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~17 !~ SDA      
+        :?                               .J                    7^                               !~  
+        :?                               .J~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~18 !~ SCLK
+        :?                               .J                    7^                               !~
+        :?                               .J                    7^                            20 !~ INT2  
+        :?                               .Y                    J^                               !~         
+        :?                               .J                    ?^                            21 !~ INT1         
+        :?                                Y                    J^                               !~         
+        :J...............................:J                    7~...............................7~         
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                    :^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^.
+
+    ==================  ========
+    SMI330 Shuttle Pin  Function
+    ==================  ========
+    1                   VDD
+    2                   VDD IO
+    3                   GND
+    17                  SDA
+    18                  SCLK
+    20                  INT2
+    21                  INT1
+    ==================  ========
+
+.. note:: Example connection when using SMI330 Mother Board from Bosch
+
+
+2.3 First Startup
+------------------
+
+#. Write Linux Image (32 bit) to SD Card
+#. Insert SD Card Host Board and power on
+#. Enable SSH on Host Board
+#. Switch the Bus selection to the selected interface on mother board. For SPI the green LED shall be on, for I2C the red LED shall be on
+
+   
+3. Software Setup
+==================
+
+3.1 Required Software
+----------------------
+
+#. Linux kernel https://github.com/raspberrypi/linux
+#. SMI330 IIO Linux driver https://github.com/boschmemssolutions/SMI330-Linux-Driver-IIO
+#. Linux environment (native or as VM) 
+
+.. hint:: Most board manufacturer provides customized Linux distribution for their boards. Consult with your board manufacturer. And download the Linux distribution for your board, if available.
+
+.. note:: We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 20.04.1 LTS
+
+- Install Toolchain and dependencies  
+
+::
+
+  $ sudo apt install crossbuild-essential-armhf
+  $ sudo apt install git bc bison flex libssl-dev make libc6-dev libncurses5-dev
+   
+  
+- Clone Linux kernel 
+
+::
+
+  $ git clone --depth=1 --branch <branch_name> https://github.com/raspberrypi/linux
+
+For the example, we use kernel v5.15, replace <branch_name> with "rpi-5.15.y"
+
+- Clone SMI330 IIO Linux driver
+
+::
+  
+  $ git clone --depth=1  https://github.com/boschmemssolutions/SMI330-Linux-Driver-IIO.git
+
+
+
+3.2 Build SMI330 IIO Linux driver
+-----------------------------------
+
+Integrate Linux driver into Linux kernel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Copy source code into Linux kernel
+
+::
+
+  $ cp -r smi330-linux-driver-iio/drivers/iio/imu/smi330 linux/drivers/iio/imu
+
+- Add entry in imu Kconfig
+
+Open linux/drivers/iio/imu/Kconfig and add the SMI330 entry
+
+.. code-block:: kconfig
+
+    source "drivers/iio/imu/.../Kconfig"
+    source "drivers/iio/imu/smi330/Kconfig"
+    source "drivers/iio/imu/.../Kconfig"
+
+
+- Add entry in imu Makefile
+    
+Open linux/drivers/iio/imu/Makefile and add the SMI330 entry    
+    
+.. code-block:: makefile
+
+    obj-y += smi330/
+    obj-y += s.../
+
+
+- Add devicetree overlay    
+
+.. collapse:: SPI
+
+    Create a devicetree overlay file "smi330-spi-overlay.dts" with the following content, and put it under "linux/arch/arm/boot/dts/overlays"
+        
+    ::
+
+        /dts-v1/;
+        /plugin/;
+
+        / {
+            compatible = "brcm,bcm2835";
+
+            fragment@0 {
+                target = <&spidev0>;
+                __dormant__ {
+                    status = "disabled";
+                };
+            };
+            
+            fragment@1 {
+                target = <&spidev1>;
+                __dormant__ {
+                    status = "disabled";
+                };
+            };
+            
+            fragment@2 {
+                target = <&spi0>;
+                __dormant__ {
+                    #address-cells = <1>;
+                    #size-cells = <0>;
+                    status = "okay";
+
+                    smi330@0 {
+                        compatible = "BOSCH,SMI330";
+                        spi-max-frequency = <10000000>;
+                        reg = <0>;
+                        interrupt-parent = <&gpio>;
+                        interrupts = <26 1>, <20 1>; /* IRQ_TYPE_EDGE_RISING */
+                    };
+                };
+            };
+
+            __overrides__ {
+                smi330 = <0>, "=0=2";
+            };
+        };
+
+    .. code-block:: makefile
+
+        dtbo-$(CONFIG_ARCH_BCM2835) += \
+        ... \
+        smi330-spi.dtbo \
+        ... \
+
+.. collapse:: I2C
+
+    Create a devicetree overlay file "smi330-i2c-overlay.dts" with the following content, and put it under "linux/arch/arm/boot/dts/overlays"
+        
+    ::
+
+        /dts-v1/;
+        /plugin/;
+
+        / {
+            compatible = "brcm,bcm2835";
+
+            fragment@20 {
+                target = <&i2c_arm>;
+                __dormant__ {
+                    #address-cells = <1>;
+                    #size-cells = <0>;
+                    status = "okay";
+
+                    smi330: smi330@68 {
+                        compatible = "Bosch,SMI330";
+                        reg = <0x68>;
+                        interrupt-parent = <&gpio>;
+                        interrupts = <26 1>, <20 1>; /* IRQ_TYPE_EDGE_RISING */
+                        status = "okay";
+                    };
+                };
+            };
+
+            __overrides__ {
+                smi330 = <0>,"+20";
+            };
+        };
+
+    .. code-block:: makefile
+
+        dtbo-$(CONFIG_ARCH_BCM2835) += \
+        ... \
+        smi330-i2c.dtbo \
+        ... \
+
+.. note:: Dependent on your hardware platform and pin layout, the settings may be different and an adaption to your target system may be required.
+
+.. _build_smi330:
+
+Build SMI330 Linux driver with the kernel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Config SMI330 Linux driver
+
+::
+
+  $ cd linux
+  $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- bcm2709_defconfig
+  $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+
+Activate the option as following
+
+  
+.. hint:: To activate an option, press "y" on the option. A \* appears, which means this option is activated as part of the kernel. Alternatively we can press "m" on the option. A "M" appears, which means this option is activated as kernel module (not as part of the kernel). Therefore we need to manually install the kernel module by ourself.
+
+::
+
+  Device Drivers -->    
+    <*>Industrial I/O support  --->
+        -*-     Industrial I/O buffering based on kfifo
+        
+        -*-     Industrial I/O triggered buffer support
+        
+        Inertial measurement units  --->
+            <*> Bosch Sensor SMI330 Inertial Measurement Unit
+                Select communication interface (Enable SPI connection)  --->
+                Select operating mode (Polling mode)  --->
+                Map data interrupt (NONE)  --->
+                Enable advanced features (Disable advanced features)  --->                                     
+        
+    
+- Build SMI330 Linux driver 
+
+::
+
+  $ make -j4 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage modules dtbs
+    
+.. note:: Build process takes quite long on the first time. To reduce the build time, we use the option "-j4". This is the option to enable the build process to be executed parallelly in 4 threads. To improve the parallel execution, just give a big number e.g. "-j6". How many parallel thread to use is dependent on your processor core number.
+    
+
+- Install the kernel with SMI330 Linux driver in SD card
+
+Insert the SD card (created in 2.3). A "bootfs" partition and a "rootfs" partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that
+
+    /media/$USER/bootfs
+  
+    /media/$USER/rootfs
+
+Write the kernel with SMI330 Linux driver in SD card
+
+::
+
+  $ export KERNEL=kernel7
+  $ export SD_BOOT_PATH=/media/$USER/boot
+  $ export SD_ROOTFS_PATH=/media/$USER/rootfs
+  $ sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
+  $ sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
+  $ sudo cp arch/arm/boot/zImage $SD_BOOT_PATH/$KERNEL.img
+  $ sudo cp arch/arm/boot/dts/*.dtb $SD_BOOT_PATH
+  $ sudo cp arch/arm/boot/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
+  $ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
+
+- Adapt the boot configuration
+
+Open the "config.txt" in "boot" partition, and add the following entries 
+
+.. collapse:: SPI
+
+    ::
+        
+      # Uncomment some or all of these to enable the optional hardware interfaces
+      dtparam=spi=on
+      dtoverlay=smi330-spi,smi330
+
+.. collapse:: I2C
+
+    ::
+        
+      # Uncomment some or all of these to enable the optional hardware interfaces
+      dtparam=i2c_arm=on,i2c_arm_baudrate=400000
+      dtoverlay=smi330-i2c,smi330
+
+Take the SD card out and put it back in board.
+
+
+4. Work with SMI330 Linux driver
+=================================
+
+4.1 Preparation
+----------------
+
+Power on the board. We firstly check if the driver was initialized properly
+
+::
+
+  $ dmesg | grep SMI330
+    SMI330 spi0.0: Bosch Sensor Device SMI330 initialization successful
+    SMI330 spi0.0: unregister SMI330
+    SMI330 spi0.0: Chip ID: 0x0041
+    SMI330 spi0.0: Bosch Sensor SPI Device SMI330 initialization successful
+   
+   
+If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folder, which we can use to read/write data from/to the sensor
+
+    /sys/bus/iio/devices/iio:device0
+   
+.. note:: Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a "name" file in the devicefolder, that we can read to find out the sensor type
+
+::
+
+  $ cd /sys/bus/iio/devices/iio:device0
+  $ cat name
+  SMI330
+    
+
+Work with driver using command line
+ 
+.. note:: To change sensor settings we need root access. It is not sufficient just using "sudo ..." .
+
+::
+
+  $ sudo su
+  
+
+.. _power_mode:
+
+4.2 Check power mode and activate
+----------------------------------
+
+::
+
+  $ cat smi_acc/acc_mode 
+  $ acc_mode : 0x00
+  $ echo 4 > smi_acc/acc_mode
+
+  $ cat smi_gyro/gyr_mode
+  $ gyr_mode : 0x00
+  $ echo 4 > smi_gyro/gyr_mode 
+
+.. note:: 0 = Suspend, 3 = Low power, 4 = Normal, 7 = Performance
+
+
+.. _read_data:
+
+4.3 Read data from sensor
+--------------------------
+
+::
+
+  $ cat in_accel_x\&y\&z_raw 
+  21 -87 4135
+  $ cat in_anglvel_x\&y\&z_raw
+  2 -1 2
+  $ cat in_temp_object_raw
+  255
+  
+
+4.4 Change sensor settings
+---------------------------
+
+Set output data rate (for accelerometer and gyroscope)
+
+::
+
+  $ echo 100 > smi_basic/odr
+   
+.. note:: 0 = 0.78125 Hz, 1 = 1.5625 Hz, 3 = 3.125 Hz, 6 = 6.25 Hz, 12 = 12.5 Hz, 25 = 25 Hz, 50 = 50 Hz, 100 = 100 Hz, 200 = 200 Hz, 400 = 400 Hz, 800 = 800 Hz, 1600 = 1600 Hz, 3200 = 3200 Hz, 6400 = 6400 Hz
+
+Set accelerometer range
+
+::
+
+  $ echo 4 > smi_acc/acc_range
+   
+.. note:: 2 = 2 g, 4 = 4 g, 8 = 8 g, 16 = 16 g
+
+Set gyroscope range
+
+::
+
+  $ echo 1000 > smi_gyro/gyr_range
+   
+.. note:: 125 = 125 °/s, 250 = 250 °/s , 500 = 500 °/s
+
+Set accelerometer averaging
+
+::
+
+  $ echo 8 > smi_acc/acc_avg_num 
+   
+.. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64
+
+Set gyroscope averaging
+
+::
+
+  $ echo 8 > smi_gyro/gyr_avg_num 
+   
+.. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64
+
+Set the -3dB cut-off frequency for the accelerometer
+
+::
+
+  $ echo 0 > smi_acc/acc_bw
+   
+.. note:: 0 = acc_odr/2, 1 = acc_odr/4
+
+Set the -3dB cut-off frequency for the gyroscope
+
+::
+
+  $ echo 0 > smi_gyro/gyr_bw
+   
+.. note:: 0 = gyr_odr/2, 1 = gyr_odr/4
+
+.. _operation_mode:
+
+4.5 Set operation mode
+-----------------------
+
+The driver supports different operation modes:
+
+- Polling
+- New data
+- FIFO (watermark and full)
+
+To set the operation mode call menuconfig as described in `build_smi330`_ and build the driver.
+For all modes except "New data", the data interrupt must be mapped to INT1 or INT2. 
+
+Polling:
+^^^^^^^^
+In "Polling" mode no interrupt is used and no data is pushed to the IIO buffer. One can simply `read_data`_ by polling the sysfs entries.
+
+New data:
+^^^^^^^^^
+In "New data" mode an interrupt is triggered every time a new sample is available and directly pushed to the IIO buffer.
+
+FIFO:
+^^^^^
+In "FIFO" mode an interrupt is triggered when the watermark level is reached or when the HW FIFO is full, depending on the configuration. 
+The HW FIFO data is then copied to the IIO buffer. The HW FIFO overwrites oldest data on buffer full condition.
+
+The HW FIFO has a size of 2048 bytes.
+Order and size of sources to the HW FIFO (timestamp is calculated by the driver, the sensor oscillator is not used, therefore excluded from HW FIFO):
+
++-------+---------------------+--------------+---------------------------------------------------+
+| Order | Source              | Size [words] | Description                                       |
++=======+=====================+==============+===================================================+
+| 1     | Accelerometer       | 3            | Acceleration with one 16bit word for each axis x, |
+|       |                     |              | y and z                                           |
++-------+---------------------+--------------+---------------------------------------------------+
+| 2     | Gyroscope           | 3            | Angular rate with one 16bit word for each axis x, |
+|       |                     |              | y and z                                           |
++-------+---------------------+--------------+---------------------------------------------------+
+| 3     | Temperature sensor  | 1            | Temperature as one 16bit word                     |
++-------+---------------------+--------------+---------------------------------------------------+
+
+The HW FIFO fill level and the HW FIFO watermark level are specified in word size according to the table above.
+
+Get HW FIFO fill level
+
+::
+
+  $ cat buffer0/hwfifo_fill_level
+
+Set HW FIFO watermark level
+
+::
+
+  $ echo 256 > buffer0/hwfifo_watermark
+   
+.. note:: Valid range: 1 ... 1023 (word size, see table above)
+
+
+4.6 Read data from IIO buffer
+------------------------------
+
+The driver uses IIO buffer to push the sensor data (e.g. accelerometer values) to the user space application.
+To read the data from user space, the Linux kernel provides a C program under tools/iio.
+We need to compile and upload it to the target board first.
+
+::
+
+  $ cd tools
+  $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iio
+  $ scp tools/iio/iio_generic_buffer to your board
+
+Execute the program:
+
+.. note:: To get sensor data, the `power_mode`_ must not be in "Suspend" mode and the `operation_mode`_ must not be "Polling". 
+
+::
+
+  $ sudo ./iio_generic_buffer -n SMI330 -a -g -l 256 -c -1
+  iio device number being used is 0
+  trigger-less mode selected
+  Enabling all channels
+  Enabling: in_anglvel_x&y&z_en
+  Enabling: in_accel_x&y&z_en
+  Enabling: in_timestamp_en
+  Enabling: in_temp_object_en
+  17841290805282 17179803648 876 1710883492553007655 
+  17849881067558 8589803520 -32768 1710883492563007655 
+  17738211721255 12884836352 875 1710883492573007655 
+  17832701001767 8589869056 -32768 1710883492583007655 
+  17789751787559 17179803649 888 1710883492593007655 
+  17819816493091 21474770944 -32768 1710883492603007655 
+  17794046427173 8589869057 875 1710883492613007655 
+  17755391262755 12884836353 -32768 1710883492623007655 
+  17824111001635 8589869056 887 1710883492633007655 
+  17832701198381 12884836353 -32768 1710883492643007655 
+  ^CCaught signal 2
+  Disabling: in_anglvel_x&y&z_en
+  Disabling: in_accel_x&y&z_en
+  Disabling: in_timestamp_en
+  Disabling: in_temp_object_en
+
+The first value represents the accelerometer values X,Y and Z (16 bit each).
+The second value represents the gyroscope values X,Y and Z (16 bit each).
+The third value represents the temperature value.
+The fourth value represents the timestamp in ns.
+
+Instead of auto-activate all channels, we can de-/activate the channels manually
+
+::
+
+  $ echo 0 > buffer0/in_anglvel_x&y&z_en
+  $ echo 1 > buffer0/in_accel_x&y&z_en
+  $ echo 1 > buffer0/in_timestamp_en
+  $ echo 0 > buffer0/in_temp_object_en
+
+Set IIO buffer length (the length is independent of the activated channels, each entry in the buffer contains the data of the activated channels)
+
+::
+
+  $ echo 256 > buffer0/length
+
+.. note:: In FIFO mode, the length of the IIO buffer should be large enough to hold all entries in the HW FIFO to prevent data loss 
+          (e.g. if all channels are activated and the HW FIFO watermark is set to 42, the IIO buffer length should be at least 6 (= 42 / (3 + 3 + 1))).
+
+
+5. SMI330 Firmware Features
+============================
+
+To use the firmware features the advanced feature engine must be enabled by calling menuconfig as described in `build_smi330`_.
+
+Some of the firmware features uses IIO event to signal the user space application that some sensor event happened (e.g. sampling value over threshold).
+To read the event from user space, the Linux kernel provides a C program under tools/iio.
+And we need to firstly compile and upload it to the target board.
+
+::
+
+   $ cd tools
+   $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iio
+   $ scp tools/iio/iio_event_monitor to your board
+
+5.1 Any-motion detection
+-------------------------
+
+Any-motion detection uses the slope between adjacent samples of the acceleration signal to detect the motion status of the device.
+An interrupt is generated when the absolute difference exceeds a configurable preset threshold for a preset duration.
+
+The parameter wait_time refers to the duration after which the generated interrupt will be cleared if the slope value drops below the threshold. 
+In other words, if the slope remains below the threshold for the specified wait_time, the interrupt will be considered inactive.
+
+The parameter hysteresis controls the sensitivity of the interrupt to be rethrown when the slope increases again after dropping below the threshold.
+It ensures that the slope must exceed the threshold by a certain margin (hysteresis value) before the interrupt is triggered again. 
+This helps prevent false triggers due to small fluctuations in the slope.
+
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type **"roc"** and direction **"rising"**
+
+anymotion configuration is able to be found under
+
+::
+
+  /sys/bus/iio/devices/iio:deviceX/events
+  ├── 'in_accel_x&y&z_roc_rising_en'                    // enable/disable any motion x&y&z-axis
+  ├── roc_rising_hysteresis                             // configure any motion hysteresis
+  ├── roc_rising_period                                 // configure any motion duration
+  ├── roc_rising_timeout                                // configure any motion wait_time
+  └── roc_rising_value                                  // configure any motion threshold
+
+enable any motion x&y&z-axis with default configuration
+
+::
+
+  $ sudo su
+  $ echo 4 > /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
+  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&y\&z_roc_rising_en
+  $ ./iio_event_monitor SMI330
+  Found IIO device with name SMI330 with device number 0
+
+We will see the anymotion events as following if moving the sensor
+
+::
+
+   Event: time: 1667837753823018925, type: accel(x|y|z), channel: 0, evtype: roc, direction: rising
+   Event: time: 1667837753842726224, type: accel(x|y|z), channel: 0, evtype: roc, direction: rising
+   Event: time: 1667837753862437586, type: accel(x|y|z), channel: 0, evtype: roc, direction: rising
+   Event: time: 1667837753882149312, type: accel(x|y|z), channel: 0, evtype: roc, direction: rising
+   Event: time: 1667837753901861871, type: accel(x|y|z), channel: 0, evtype: roc, direction: rising
+   Event: time: 1667837753921574535, type: accel(x|y|z), channel: 0, evtype: roc, direction: rising
+
+5.2 No-motion detection
+------------------------
+
+No-motion detection uses the absolute slope between two consecutive acceleration signal samples to detect the static state of the device. 
+In no-motion mode, an interrupt is generated if the slope of all enabled axes remains smaller than a preset threshold for a preset duration.
+
+The parameter wait_time refers to the duration after which the generated interrupt will be cleared if the slope value drops below the threshold. 
+In other words, if the slope remains below the threshold for the specified wait_time, the interrupt will be considered inactive.
+
+The parameter hysteresis controls the sensitivity of the interrupt to be rethrown when the slope increases again after dropping below the threshold.
+It ensures that the slope must exceed the threshold by a certain margin (hysteresis value) before the interrupt is triggered again. 
+This helps prevent false triggers due to small fluctuations in the slope.
+
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"roc"** and direction **"falling"**
+
+nomotion configuration is able to be found under
+
+::
+
+  /sys/bus/iio/devices/iio:deviceX/events
+  ├── 'in_accel_x&y&z_roc_falling_en'                    // enable/disable no motion x&y&z-axis
+  ├── roc_falling_hysteresis                             // configure no motion hysteresis
+  ├── roc_falling_period                                 // configure no motion duration
+  ├── roc_falling_timeout                                // configure no motion wait_time
+  └── roc_falling_value                                  // configure no motion threshold
+
+enable no motion x-axis with default configuration
+
+::
+
+  $ sudo su
+  $ echo 4 > /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
+  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&y\&z_roc_falling_en
+  $ ./iio_event_monitor SMI330
+  Found IIO device with name SMI330 with device number 0
+  Event: time: 1667845513396539597, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
+  Event: time: 1667845513416250976, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
+  Event: time: 1667845513435964698, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
+  Event: time: 1667845513455680347, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
+
+
+5.3 Tilt detection
+-------------------
+
+Tilt detection is a feature that detects changes in the attitude angle of a device.
+When using tilt detection, a tilt interrupt is reported when the attitude angle of the device changes by a value greater 
+than a configured angle threshold.
+To control the behavior of the tilt detection algorithm, the parameters `min_tilt_angle`, `beta_acc_mean` and `segment_size` can be configured.
+
+A tilt interrupt is reported when the attitude angle of the device changes by a value greater than the configured angle threshold.
+By adjusting the value of `segment_size`, you can control the length of the time interval over which the estimation is performed.
+The parameter `beta_acc_mean` is used to configure the lowpass filtering for the continuous estimation of the gravity acceleration vector. 
+
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"change"** and direction **"either"**
+
+::
+
+  /sys/bus/iio/devices/iio:deviceX/events
+  ├── 'in_accel_x&y&z_change_either_en'                  // enable/disable no motion x&y&z-axis
+  ├── change_either_low_pass_filter_3db                  // configure tilt low pass filter
+  ├── change_either_period                               // configure tilt duration
+  └── change_either_value                                // configure tilt minimum tilt angle
+
+enable tilt detection with default configuration
+
+::
+
+   $ sudo su
+   $ echo 4 > /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
+   $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&y\&z_change_either_en
+   $ ./iio_event_monitor SMI330
+   Found IIO device with name SMI330 with device number 0
+  
+tilt the sensor to see the following events
+
+::
+
+  Event: time: 1703449136664221930, type: accel(x&y&z), channel: 0, evtype: change, direction: either
+  Event: time: 1703449140245313491, type: accel(x&y&z), channel: 0, evtype: change, direction: either
+  Event: time: 1703449143001386615, type: accel(x&y&z), channel: 0, evtype: change, direction: either
+  Event: time: 1703449145516049322, type: accel(x&y&z), channel: 0, evtype: change, direction: either
+
+
+5.4 Gyroscope self calibration
+-------------------------------
+
+The device offers self-calibration for the gyroscope sensitivity error and the gyroscope offset. Self-calibration to reduce
+the gyroscope sensitivity error is also known as component re-trim (CRT).
+
+The self calibration ABI will run the calibration routine and update the data path registers in the device.
+
+Before initiating the self-calibration, the accelerometer is required to be enabled (already) in high performance mode with a sample rate
+preferred in the range of 25 Hz up to 200 Hz and the alternative sensor configurations for accelerometer and gyroscope must be disabled.
+
+If these preconditions are not fulfilled, the driver will make sure they are fulfilled by changing appropriate register values and then
+restore the configuration after the self calibration has been performed.
+
+::
+
+  $ cat smi_adv/self_cal
+
+  
+5.5 Auto-Operation mode change
+-------------------------------
+
+The auto-operation mode change is a built-in feature to support the smart power management of the device. The
+function provides automatic switching among two sets of operation modes for its accelerometer and gyroscope. In the following,
+the one set of configurations consists of ACC_CONF and GYR_CONF for the accelerometer and gyroscope and is called user configuration. The other set sensor of configurations consists of ALT_ACC_CONF and ALT_GYR_CONF, and is called
+alternative configuration. The switching is initiated by events of enabled advanced features or by commands sent from the host to switch from alternative configuration to user configuration.
+The advanced feature engine and interrupts must be enabled for the Auto-Operation mode to take effect. 
+
+Accelerometer change enable of Auto-Operation mode is done by
+
+::
+
+  $ sudo su
+  $ echo 0 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+
+
+Gyroscope change enable of Auto-Operation mode is done by
+
+::
+
+  $ sudo su
+  $ echo 1 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+
+Accelerometer and gyroscope change enable of Auto-Operation mode is done by
+
+::
+
+  $ sudo su
+  $ echo 2 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+
+Disabling of Auto-Operation mode is done by
+
+::
+
+  $ sudo su
+  $ echo 3 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+
+.. note:: Disabling the Auto-Operation mode will also reset the advanced features switching conditions and the manual switch from alternative to user configuration
+
+The conditions to switch operation mode must be configured by selecting one of the advanced features that will trigger the Auto-Operation and from what operation mode should that feature trigger the change. The same advanced feature cannot be selected as a trigger for both user configuration and alternative configuration.
+
+Auto-Operation mode conditions can be configured by
+
+::
+
+ $ sudo su
+ $ echo x > /sys/bus/iio/devices/iio\:device0/auto_op/set_auto_op_mode_cond
+
+  Possible values for x are 
+  ├── 0							// Change to User settings by A_NO_MOTION
+  ├── 1							// Change to User settings by A_ANY_MOTION
+  ├── 2							// Change to User settings by H_TILT_DETECTION
+  ├── 3							// Change to Alternative settings by A_NO_MOTION
+  ├── 4							// Change to Alternative settings by A_ANY_MOTION
+  └── 5							// Change to Alternative settings by H_TILT_DETECTION
+
+The configurations of the sensors can be instantly reset to the user configuration by directly writing from the host to either ACC_CONF or GYR_CONF. This operation can be enabled or disabled by
+
+::
+
+ $ sudo su
+ $ echo 1 > /sys/bus/iio/devices/iio\:device0/auto_op/config_user_overwrite
+
+Set alternative configuration:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Set alternative output data rate (for accelerometer and gyroscope)
+
+::
+
+  $ sudo su
+  $ echo 100 > smi_adv/alt_odr
+   
+.. note:: 0 = 0.78125 Hz, 1 = 1.5625 Hz, 3 = 3.125 Hz, 6 = 6.25 Hz, 12 = 12.5 Hz, 25 = 25 Hz, 50 = 50 Hz, 100 = 100 Hz, 200 = 200 Hz, 400 = 400 Hz, 800 = 800 Hz, 1600 = 1600 Hz, 3200 = 3200 Hz, 6400 = 6400 Hz
+
+Set alternative accelerometer power mode
+
+::
+
+  $ sudo su
+  $ echo 4 > smi_adv/alt_acc_mode
+
+.. note:: 0 = Suspend, 3 = Low power, 4 = Normal, 7 = Performance
+
+Set alternative gyroscope power mode
+
+::
+
+  $ sudo su
+  $ echo 4 > smi_adv/alt_gyr_mode
+
+.. note:: 0 = Suspend, 3 = Low power, 4 = Normal, 7 = Performance
+
+Set alternative accelerometer averaging
+
+::
+
+  $ sudo su
+  $ echo 8 > smi_adv/alt_acc_avg_num
+   
+.. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64
+
+Set alternative gyroscope averaging
+
+::
+
+  $ sudo su
+  $ echo 8 > smi_adv/alt_gyr_avg_num
+   
+.. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64

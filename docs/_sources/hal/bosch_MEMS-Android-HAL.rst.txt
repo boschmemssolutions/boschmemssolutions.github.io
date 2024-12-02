@@ -1,0 +1,235 @@
+==============================
+Bosch MEMS Android HAL
+==============================
+
+1. Introduction
+===============
+
+The MEMS Android HAL (Hardware Abstraction Layer) implementation shall be used with the 
+`Bosch MEMS Android HAL driver <https://sourcecode.socialcoding.bosch.com/projects/BSEHSW/repos/bosch-mems-android-hal>`_.
+
+1.1 Architecture Overview
+--------------------------------
+
+.. code-block:: none
+
+        Android Apps
+            |
+        Android HAL
+            |
+      Bosch Sensor HAL
+            |
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     sysfs       dev
+       \          /
+      iio-subsystem
+            |
+       bosch-driver
+            |
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          Hardware
+
+
+2. Prerequisites
+================
+
+- Set up an Android build environment as described in the `Set up for Android Open Source Project (AOSP) documentation <https://source.android.com/setup/build/initializing>`_
+- Download the Android source tree as described in the `Download Android Source documentation <https://source.android.com/setup/build/downloading>`_
+
+.. important:: Building the Android platform requires at least 32 GB RAM. The download and build process can take several hours and consumes approximately 300 GB of disk space.
+    
+It is recommended to use the following versions: android-13.0.0.
+All the Android distributions provide the platform and kernel in 2 different repositories. Therefore we need to firstly create 2 working folders for both platform and kernel.
+
+- download kernel source
+- go to the kernel folder
+
+.. code-block::
+
+    repo init -u https://android.googlesource.com/kernel/manifest -b common-android13-5.15
+    repo sync
+
+- download platform source
+- go to the platform folder
+
+.. code-block::
+
+    repo init -u https://android.googlesource.com/platform/manifest -b android-13.0.0_r75 --depth=1
+    curl -o .repo/local_manifests/manifest_brcm_rpi4.xml -L https://raw.githubusercontent.com/raspberry-vanilla/android_local_manifest/android-13.0/manifest_brcm_rpi4.xml --create-dirs
+    curl -o .repo/local_manifests/remove_projects.xml -L https://raw.githubusercontent.com/raspberry-vanilla/android_local_manifest/android-13.0/remove_projects.xml
+    repo sync
+
+
+
+
+3. Integrate Linux driver into Android Kernel
+=================================================
+
+3.1 Preparation for build
+--------------------------------
+
+Go to the "common" folder. this is the root folder of the kernel source. We use smi230 linux driver as example.
+
+- Copy the Linux driver in drivers/iio/imu 
+- add source "drivers/iio/imu/smi230/Kconfig" in Kconfig
+- add obj-y += smi230/ in Makefile
+
+ 
+Activate Sensor in kernel
+
+Now we start menuconfig to activate sensor driver. 
+
+- load the standard kernel configuration for your hardware. Dependent on the HW, you can find the stand configuration under build.config.xxx.  Example: for the Qualcomm db845c board, the standard configuration is db845c_gki_defconfig defined in build.config.db845c.  If you go to arch/arm64/configs the db845c_gki_defconfig is not there.  This need to be firstly created by scripts/kconfig/merge_config.sh -m -r arch/arm64/configs/gki_defconfig arch/arm64/configs/db845c_gki.fragment. This will create .config at the android root folder. Rename to db845c_gki_defconfig and copy to arch/arm64/configs/
+- load the standard kernel configuration for your hardware.  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- db845c_gki_defconfig
+- start menuconfig to activate sensor driver make  ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig activate the sensor driver , save and exit.  
+
+::
+
+    <*>Industrial I/O support  --->		
+		Inertial measurement units  --->
+			<*> Bosch Sensor SMI230 Inertial Measurement Unit
+
+3.2 Extend device tree
+---------------------------------
+extend the device tree with the sensor entries. This part is very HW specific. Please consult your HW vendor, how to do it properly for your HW.
+
+If using spi, add the following device tree entry to spi sub tree.
+
+::
+
+    smi230acc@0 {
+        compatible = "bosch,smi230acc";
+        spi-max-frequency = <10000000>;
+        reg = <0>;
+        interrupt-parent = <&gpio>;
+        interrupts = <26 1>; /* IRQ_TYPE_EDGE_RISING */
+        interrupt-names = "ACC_INT";
+    };
+    smi230gyro@1 {
+        compatible = "bosch,smi230gyro";
+        spi-max-frequency = <10000000>;
+        reg = <1>;
+        interrupt-parent = <&gpio>;
+        interrupts = <20 1>; /* IRQ_TYPE_EDGE_RISING */
+        interrupt-names = "GYRO_INT";
+    };
+
+If using i2c, add the following device tree entry to i2c sub tree.
+
+::
+
+    smi230acc: smi230acc@18 {
+		compatible = "bosch,smi230acc";
+		reg = <0x18>;
+		interrupt-parent = <&gpio>;
+        interrupts = <26 1>; /* IRQ_TYPE_EDGE_RISING */
+		interrupt-names = "ACC_INT";
+		status = "okay";
+	};
+    smi230gyro: smi230gyro@68 {
+		compatible = "bosch,smi230gyro";
+		reg = <0x68>;
+		interrupt-parent = <&gpio>;
+        interrupts = <20 1>; /* IRQ_TYPE_EDGE_RISING */
+		interrupt-names = "GYRO_INT";
+		status = "okay";
+	};
+
+
+3.3 Build and replace the kernel
+-----------------------------------
+
+Now build the kernel make -j6 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image modules dtbs
+
+When the build process finished, we need to replace the prebuilt kernel with our new built kernel. This can be done in 2 different ways
+
+- export TARGET_PREBUILT_KERNEL="Path to my zImage" and then build the platform.
+- find out the location of the prebuilt kernel in $(ANDROID_ROOT)/device/<my device>/device.mk and copy and replace the prebuilt kernel with our new built kernel
+
+
+4. Integrate Sensor HAL into Android Platform
+=================================================
+
+In the last section we extend the android kernel with our sensor driver. Now we need to integrate the sensor HAL into the android platform.
+
+4.1 Preparation for build
+-----------------------------------
+
+- create folder $(ANDROID_ROOT)/hardware/bosch/sensors and copy all the sensor HAL source code there.
+- open $(ANDROID_ROOT)/device/<my device>/device.mk and add the following content dependent on which HAL type you are going to use.
+
+.. important:: Be careful with the HAL Type and your Android version. HIDL HALs is not supported any more from android14. If you use Android14 or above, only the AIDL HALs shall be used.
+
+::
+
+    # For sensor hal 2.0
+    PRODUCT_PACKAGES += android.hardware.sensors@2.0-service.bosch
+
+    # For sensor hal 2.1
+    PRODUCT_PACKAGES += android.hardware.sensors@2.1-service.bosch
+
+    # For sensor hal AIDL
+    PRODUCT_PACKAGES += android.hardware.sensors@aidl-service.bosch
+
+    # For sensor multi hal 2.X
+    PRODUCT_PACKAGES += android.hardware.sensors@2.X-service.multihal.bosch
+    PRODUCT_COPY_FILES += hardware/bosch/sensors/multihal/common/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
+
+    # For sensor multi hal AIDL
+    PRODUCT_PACKAGES += android.hardware.sensors@aidl-service.multihal.bosch
+    PRODUCT_COPY_FILES += hardware/bosch/sensors/multihal/common/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
+
+4.2 Build Sensor HAL
+-------------------------------
+
+Now we can build the system. Prepare the build environment 
+
+::
+
+    source build/envsetup.sh
+
+    lunch aosp-your-lunch-choice-userdebug
+
+    There is dependency between the SW module. To build the sensor HAL we need to firstly the dependencies.
+
+        mmma hardware/bosch/sensors/hwctl
+        mmma hardware/bosch/sensors/core
+        mmma hardware/bosch/sensors/sensors
+        make bootimage systemimage vendorimage -j$(nproc)
+
+
+Check if the HAL service binary is built properly under $(ANDROID_ROOT)/out/target/product/rpi4/vendor/bin/hw
+
+
+4.3 Extend sepolicy
+-------------------------------
+
+In Android without explicit permission, the execution is always forbidden.
+
+Add the following content in $(ANDROID_ROOT)/device/<my device>/sepolicy/file_contexts
+
+::
+
+    #Bosch Sensor HAL
+
+    /vendor/bin/hw/android\.hardware\.sensors@2\.0-service\.bosch u:object_r:hal_sensors_default_exec:s0
+
+    /vendor/bin/hw/android\.hardware\.sensors@2\.1-service\.bosch u:object_r:hal_sensors_default_exec:s0
+
+    /vendor/bin/hw/android\.hardware\.sensors@aidl-service\.bosch u:object_r:hal_sensors_default_exec:s0
+
+    /vendor/bin/hw/android\.hardware\.sensors@2\.X-service\.multihal\.bosch u:object_r:hal_sensors_default_exec:s0
+
+    /vendor/bin/hw/android\.hardware\.sensors@aidl-service\.multihal\.bosch u:object_r:hal_sensors_default_exec:s0
+
+    make bootimage systemimage vendorimage -j$(nproc)
+
+4.3 Extend sepolicy
+-------------------------------
+::
+
+    adb connect
+    adb shell
+    service list | grep sensor
+
+the android.hardware.sensors.ISensors.default service shall be started properly.

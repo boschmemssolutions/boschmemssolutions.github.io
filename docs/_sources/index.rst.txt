@@ -12,5 +12,6 @@ Bosch MEMS Sensor Linux Driver documentation
 
    iio/bosch_smi230_IIO
    iio/bosch_smi240_IIO
-
-
+   iio/bosch_smi330_IIO
+   hal/bosch_smi240_HAL
+   hal/bosch_MEMS-Android-HAL

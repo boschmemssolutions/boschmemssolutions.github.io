@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bosch MEMS Sensor Linux Driver documentation &mdash; Bosch MEMS Sensor Linux Driver  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <title>Bosch MEMS Sensor Linux Driver documentation &mdash; Bosch MEMS Sensor Linux Driver  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -38,10 +43,13 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="iio/bosch_smi230_IIO.html">Bosch SMI230 IIO driver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="iio/bosch_smi240_IIO.html">Bosch SMI240 IIO driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="iio/bosch_smi330_IIO.html">Bosch SMI330 IIO driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal/bosch_smi240_HAL.html">Bosch SMI240 Sensor HAL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal/bosch_MEMS-Android-HAL.html">Bosch MEMS Android HAL</a></li>
 </ul>
 
         </div>
@@ -68,10 +76,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="bosch-mems-sensor-linux-driver-documentation">
-<h1>Bosch MEMS Sensor Linux Driver documentation<a class="headerlink" href="#bosch-mems-sensor-linux-driver-documentation" title="Permalink to this headline"></a></h1>
+  <section id="bosch-mems-sensor-linux-driver-documentation">
+<h1>Bosch MEMS Sensor Linux Driver documentation<a class="headerlink" href="#bosch-mems-sensor-linux-driver-documentation" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="iio/bosch_smi230_IIO.html">Bosch SMI230 IIO driver</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="iio/bosch_smi230_IIO.html#overview">1. Overview</a></li>
@@ -88,9 +96,31 @@
 <li class="toctree-l2"><a class="reference internal" href="iio/bosch_smi240_IIO.html#work-with-smi240-linux-driver">4. Work with SMI240 Linux driver</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="iio/bosch_smi330_IIO.html">Bosch SMI330 IIO driver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iio/bosch_smi330_IIO.html#overview">1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iio/bosch_smi330_IIO.html#hardware-setup">2. Hardware Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iio/bosch_smi330_IIO.html#software-setup">3. Software Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iio/bosch_smi330_IIO.html#work-with-smi330-linux-driver">4. Work with SMI330 Linux driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iio/bosch_smi330_IIO.html#smi330-firmware-features">5. SMI330 Firmware Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hal/bosch_smi240_HAL.html">Bosch SMI240 Sensor HAL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_smi240_HAL.html#introduction">1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_smi240_HAL.html#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_smi240_HAL.html#integration-steps">3. Integration Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_smi240_HAL.html#testing-and-verification">4. Testing and Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hal/bosch_MEMS-Android-HAL.html">Bosch MEMS Android HAL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_MEMS-Android-HAL.html#introduction">1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_MEMS-Android-HAL.html#prerequisites">2. Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_MEMS-Android-HAL.html#integrate-linux-driver-into-android-kernel">3. Integrate Linux driver into Android Kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hal/bosch_MEMS-Android-HAL.html#integrate-sensor-hal-into-android-platform">4. Integrate Sensor HAL into Android Platform</a></li>
+</ul>
+</li>
 </ul>
 </div>
-</div>
+</section>
 
 
            </div>

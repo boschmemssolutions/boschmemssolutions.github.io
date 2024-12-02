@@ -1,0 +1,74 @@
+==============================
+Bosch SMI240 Sensor HAL
+==============================
+
+1. Introduction
+===============
+
+The SMI240 Sensor HAL (Hardware Abstraction Layer) implementation shall be used with the 
+`SMI240 kernel driver <https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO>`_ 
+based on the `Linux IIO subsystem <https://www.kernel.org/doc/html/v5.15/driver-api/iio/index.html>`_.
+
+2. Prerequisites
+================
+
+- Familiarity with Linux kernel compilation and configuration
+- Basic knowledge of Android development and AOSP
+- The Android source tree is downloaded
+
+3. Integration Steps
+====================
+
+3.1 Linux Kernel with SMI240 IIO driver
+---------------------------------------
+
+1. The `SMI240 IIO driver documentation <https://boschmemssolutions.github.io/iio/bosch_smi240_IIO.html>`_ 
+   decribes how to build the Linux kernel.
+2. Integrate the kernel and build the AOSP project to ensure the Linux kernel is included in the build.
+
+3.2 SMI240 Sensor HAL Integration
+---------------------------------
+
+1. Adapt your manifest file or manually clone the 
+   `SMI240 Sensor HAL <https://github.com/boschmemssolutions/SMI240-Android-HAL>`_ repository 
+   into the desired AOSP project's directory, e.g. ``hardware/bosch/sensors/``.
+2. Add the desired sensor HAL service, e.g. by modifying the device makefile (e.g., ``device/manufacturer/device_name/device.mk``): 
+
+.. code-block:: makefile
+
+    # For sensor hal 2.0
+    PRODUCT_PACKAGES += android.hardware.sensors@2.0-service.bosch
+    # For sensor hal 2.1
+    PRODUCT_PACKAGES += android.hardware.sensors@2.1-service.bosch
+    # For sensor hal AIDL
+    PRODUCT_PACKAGES += android.hardware.sensors@aidl-service.bosch
+    # For sensor multi hal 2.X
+    PRODUCT_PACKAGES += android.hardware.sensors@2.X-service.multihal bosch.sensor.multihal
+    PRODUCT_COPY_FILES += hardware/bosch/sensors/multihal/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
+    # For sensor multi hal AIDL
+    PRODUCT_PACKAGES += android.hardware.sensors-service.multihal bosch.sensor.multihal
+    PRODUCT_COPY_FILES += hardware/bosch/sensors/multihal/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
+
+3. Modify the sepolicy file_contexts file (e.g., ``device/manufacturer/device_name/sepolicy/file_contexts``) by adding the following lines, depending on the HAL version used: 
+
+.. code-block:: makefile
+
+    # For sensor hal 2.0
+    /vendor/bin/hw/android\.hardware\.sensors@2\.0-service\.bosch u:object_r:hal_sensors_default_exec:s0
+    # For sensor hal 2.1
+    /vendor/bin/hw/android\.hardware\.sensors@2\.1-service\.bosch u:object_r:hal_sensors_default_exec:s0
+    # For sensor hal AIDL
+    /vendor/bin/hw/android\.hardware\.sensors@aidl-service\.bosch u:object_r:hal_sensors_default_exec:s0
+    # For sensor multi hal 2.X
+    /vendor/bin/hw/android\.hardware\.sensors@2\.X-service\.multihal u:object_r:hal_sensors_default_exec:s0
+    # For sensor multi hal AIDL
+    /vendor/bin/hw/android\.hardware\.sensors-service\.multihal u:object_r:hal_sensors_default_exec:s0
+
+4. Build the AOSP project to ensure the SMI240 Sensor HAL compiles successfully.
+
+4. Testing and Verification
+===========================
+
+- Flash the built AOSP image onto your target device.
+- Verify that the SMI240 IIO driver was installed properly by checking the ``/sys/bus/iio/devices/iio:device0`` directory.
+- Verify that the SMI240 Sensor HAL is functioning correctly by executing ``adb shell dumpsys sensorservice``.
