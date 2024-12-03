@@ -70,7 +70,7 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 3.1 Required Software
 ----------------------
 
-#. Linux kernel (choose kernel branch rpi-5.15.y)  https://github.com/raspberrypi/linux
+#. Linux kernel
 #. SMI230 IIO Linux driver   https://github.com/boschmemssolutions/SMI230-Linux-Driver-IIO
 #. Linux environment (native or as VM) 
 
@@ -86,11 +86,7 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
   
 - Clone Linux kernel 
 
-::
-
-  git clone --depth=1 --branch <branch_name> https://github.com/raspberrypi/linux
-
-We use kernel v5.15, replace <branch_name> with "rpi-5.15.y"
+We use kernel v5.15.
 
 - Clone SMI230 IIO Linux driver
 
@@ -609,7 +605,7 @@ The firmware features uses IIO event to signal the user space application that s
 5.1 Anymotion
 ----------------------
 
-Any-motion detection uses the absolute difference (=slope) between the current input and an acceleration reference sample to detect the motion status of the device. This feature can be used for wake-up. An interrupt is generated when the absolute difference exceeds a configurable, preset threshold for a preset duration. For more details see SMI230 TCD 7.11
+Any-motion detection uses the absolute difference (=slope) between the current input and an acceleration reference sample to detect the motion status of the device. This feature can be used for wake-up. An interrupt is generated when the absolute difference exceeds a configurable, preset threshold for a preset duration. For more details see SMI230 TCD
 
 .. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type **"roc"** and direction **"rising"**
 
@@ -648,7 +644,7 @@ Move sensor in x-axis. We will see the anymotion events as following
 5.2 Nomotion
 ----------------------
 
-No-motion detection uses the absolute slope between two consecutive acceleration signal samples to detect the static state of the device. In no-motion mode, an interrupt is generated if the slope of all enabled axes remains smaller than a preset threshold for a preset duration. For more details see SMI230 TCD 7.15
+No-motion detection uses the absolute slope between two consecutive acceleration signal samples to detect the static state of the device. In no-motion mode, an interrupt is generated if the slope of all enabled axes remains smaller than a preset threshold for a preset duration. For more details see SMI230 TCD
 
 .. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"roc"** and direction **"falling"**
 
@@ -683,7 +679,7 @@ Since the sensor is static, nomation events come immediately after command execu
 5.3 High-G
 ----------------------
 
-The high-g interrupt is based on the comparison of acceleration data against a high-g threshold for the detection of wake-up, shock, or other high-acceleration events. The interrupt is triggered if the absolute value of acceleration data of at least one enabled axis exceeds the programmed threshold for a preset duration. For more details see SMI230 TCD 7.12
+The high-g interrupt is based on the comparison of acceleration data against a high-g threshold for the detection of wake-up, shock, or other high-acceleration events. The interrupt is triggered if the absolute value of acceleration data of at least one enabled axis exceeds the programmed threshold for a preset duration. For more details see SMI230 TCD
 
 .. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map high-g event to IIO event type **"thresh_adaptive"** , map positive acceleration to direction **"rising"**, and map negative acceleration to direction **"falling"**
 
@@ -725,7 +721,7 @@ Strongly move sensor in x-axis for several seconds. We will see the high-g event
 5.3 Low-G
 ----------------------
 
-The low-g interrupt is based on the comparison of acceleration data against a low-g threshold, which is most useful for free-fall detection. An interrupt is generated when the magnitude of the acceleration values goes below the set low-g threshold for a preset duration. For more details see SMI230 TCD 7.13
+The low-g interrupt is based on the comparison of acceleration data against a low-g threshold, which is most useful for free-fall detection. An interrupt is generated when the magnitude of the acceleration values goes below the set low-g threshold for a preset duration. For more details see SMI230 TCD
 
 .. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map low-g event to IIO event type **"thresh"** and direction **"falling"**
 
@@ -764,7 +760,7 @@ Let the sensor have a samll free-fall. We will see the low-g events as following
 5.4 Orientation
 ----------------------
 
-The orientation detection feature gives information on an orientation change of the SMI230 with respect to the gravitational field vector g. There are the orientations face up / face down, and orthogonal to that portrait upright, landscape left, portrait upside down and landscape right. For more details see SMI230 TCD 7.14
+The orientation detection feature gives information on an orientation change of the SMI230 with respect to the gravitational field vector g. There are the orientations face up / face down, and orthogonal to that portrait upright, landscape left, portrait upside down and landscape right. For more details see SMI230 TCD
 
 .. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map face up/down event to IIO event type **"change"** and portrait/landscape event to IIO event type **"mag"**
 
@@ -848,9 +844,9 @@ Orientation Mapping
 5.4 Data Synchronization
 ---------------------------
 
-To achieve data synchronization on SMI230, the new data interrupt signal from the gyroscope of the SMI230 needs to be connected to one of the interrupt pins of the SMI230 accelerometer (which can be configured as input pins). The internal signal processing unit of the accelerometer uses the data ready signal from the gyroscope to synchronize and interpolate the data of the accelerometer, considering the group delay of the sensors. The accelerometer part can then notify the host of available data. With this technique, it is possible to achieve synchronized data and provide accelerometer data at an ODR up to 2 kHz. The data synchronization feature supports 100 Hz, 200 Hz, 400 Hz, 1 kHz and 2 kHz data rates. For more details see SMI230 TCD 7.10
+To achieve data synchronization on SMI230, the new data interrupt signal from the gyroscope of the SMI230 needs to be connected to one of the interrupt pins of the SMI230 accelerometer (which can be configured as input pins). The internal signal processing unit of the accelerometer uses the data ready signal from the gyroscope to synchronize and interpolate the data of the accelerometer, considering the group delay of the sensors. The accelerometer part can then notify the host of available data. With this technique, it is possible to achieve synchronized data and provide accelerometer data at an ODR up to 2 kHz. The data synchronization feature supports 100 Hz, 200 Hz, 400 Hz, 1 kHz and 2 kHz data rates. For more details see SMI230 TCD
 
-.. note:: SMI230 Linux driver only support the application schematic defined in TCD 7.10.2. The SMI230 interrupt pins INT1 (ACC) and INT3 (GYR) have to be connected externally on the PCB. The GYR new data interrupt needs to be mapped to INT3, while INT1 needs to be configured as an input pin. For a data ready host notification, the interrupt pin INT2 (ACC) shall be used.
+.. note:: SMI230 Linux driver only support the application schematic defined in TCD. The SMI230 interrupt pins INT1 (ACC) and INT3 (GYR) have to be connected externally on the PCB. The GYR new data interrupt needs to be mapped to INT3, while INT1 needs to be configured as an input pin. For a data ready host notification, the interrupt pin INT2 (ACC) shall be used.
 
 - Re-config ther kernel to activate data synchronization
 
@@ -932,14 +928,14 @@ Enable acc and set output data rate to 100 Hz
 ::
 
     sudo su
-    root@raspberrypi:/home/pi# echo normal > /sys/bus/iio/devices/iio\:device1/power_mode
-    root@raspberrypi:/home/pi# echo 100 > /sys/bus/iio/devices/iio\:device1/sampling_frequency
+    root@host:/home/pi# echo normal > /sys/bus/iio/devices/iio\:device1/power_mode
+    root@host:/home/pi# echo 100 > /sys/bus/iio/devices/iio\:device1/sampling_frequency
     
 Read data from buffer
 
 ::
 
-   root@raspberrypi:/home/pi# ./iio_generic_buffer -N 1 -c -1 -a
+   root@host:/home/pi# ./iio_generic_buffer -N 1 -c -1 -a
    iio device number being used is 1
    iio trigger number being used is 0
    Enabling all channels

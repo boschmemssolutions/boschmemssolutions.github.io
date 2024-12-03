@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
@@ -6,18 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bosch SMI230 IIO driver &mdash; Bosch MEMS Sensor Linux Driver  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -171,7 +169,7 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 <section id="required-software">
 <h3>3.1 Required Software<a class="headerlink" href="#required-software" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
-<li><p>Linux kernel (choose kernel branch rpi-5.15.y)  <a class="reference external" href="https://github.com/raspberrypi/linux">https://github.com/raspberrypi/linux</a></p></li>
+<li><p>Linux kernel</p></li>
 <li><p>SMI230 IIO Linux driver   <a class="reference external" href="https://github.com/boschmemssolutions/SMI230-Linux-Driver-IIO">https://github.com/boschmemssolutions/SMI230-Linux-Driver-IIO</a></p></li>
 <li><p>Linux environment (native or as VM)</p></li>
 </ol>
@@ -189,10 +187,7 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 <ul class="simple">
 <li><p>Clone Linux kernel</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">depth</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">branch</span> <span class="o">&lt;</span><span class="n">branch_name</span><span class="o">&gt;</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">raspberrypi</span><span class="o">/</span><span class="n">linux</span>
-</pre></div>
-</div>
-<p>We use kernel v5.15, replace &lt;branch_name&gt; with “rpi-5.15.y”</p>
+<p>We use kernel v5.15.</p>
 <ul class="simple">
 <li><p>Clone SMI230 IIO Linux driver</p></li>
 </ul>
@@ -685,7 +680,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </div>
 <section id="anymotion">
 <h3>5.1 Anymotion<a class="headerlink" href="#anymotion" title="Link to this heading"></a></h3>
-<p>Any-motion detection uses the absolute difference (=slope) between the current input and an acceleration reference sample to detect the motion status of the device. This feature can be used for wake-up. An interrupt is generated when the absolute difference exceeds a configurable, preset threshold for a preset duration. For more details see SMI230 TCD 7.11</p>
+<p>Any-motion detection uses the absolute difference (=slope) between the current input and an acceleration reference sample to detect the motion status of the device. This feature can be used for wake-up. An interrupt is generated when the absolute difference exceeds a configurable, preset threshold for a preset duration. For more details see SMI230 TCD</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type <strong>“roc”</strong> and direction <strong>“rising”</strong></p>
@@ -719,7 +714,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </section>
 <section id="nomotion">
 <h3>5.2 Nomotion<a class="headerlink" href="#nomotion" title="Link to this heading"></a></h3>
-<p>No-motion detection uses the absolute slope between two consecutive acceleration signal samples to detect the static state of the device. In no-motion mode, an interrupt is generated if the slope of all enabled axes remains smaller than a preset threshold for a preset duration. For more details see SMI230 TCD 7.15</p>
+<p>No-motion detection uses the absolute slope between two consecutive acceleration signal samples to detect the static state of the device. In no-motion mode, an interrupt is generated if the slope of all enabled axes remains smaller than a preset threshold for a preset duration. For more details see SMI230 TCD</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type <strong>“roc”</strong> and direction <strong>“falling”</strong></p>
@@ -749,7 +744,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </section>
 <section id="high-g">
 <h3>5.3 High-G<a class="headerlink" href="#high-g" title="Link to this heading"></a></h3>
-<p>The high-g interrupt is based on the comparison of acceleration data against a high-g threshold for the detection of wake-up, shock, or other high-acceleration events. The interrupt is triggered if the absolute value of acceleration data of at least one enabled axis exceeds the programmed threshold for a preset duration. For more details see SMI230 TCD 7.12</p>
+<p>The high-g interrupt is based on the comparison of acceleration data against a high-g threshold for the detection of wake-up, shock, or other high-acceleration events. The interrupt is triggered if the absolute value of acceleration data of at least one enabled axis exceeds the programmed threshold for a preset duration. For more details see SMI230 TCD</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map high-g event to IIO event type <strong>“thresh_adaptive”</strong> , map positive acceleration to direction <strong>“rising”</strong>, and map negative acceleration to direction <strong>“falling”</strong></p>
@@ -787,7 +782,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </section>
 <section id="low-g">
 <h3>5.3 Low-G<a class="headerlink" href="#low-g" title="Link to this heading"></a></h3>
-<p>The low-g interrupt is based on the comparison of acceleration data against a low-g threshold, which is most useful for free-fall detection. An interrupt is generated when the magnitude of the acceleration values goes below the set low-g threshold for a preset duration. For more details see SMI230 TCD 7.13</p>
+<p>The low-g interrupt is based on the comparison of acceleration data against a low-g threshold, which is most useful for free-fall detection. An interrupt is generated when the magnitude of the acceleration values goes below the set low-g threshold for a preset duration. For more details see SMI230 TCD</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map low-g event to IIO event type <strong>“thresh”</strong> and direction <strong>“falling”</strong></p>
@@ -817,7 +812,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </section>
 <section id="orientation">
 <h3>5.4 Orientation<a class="headerlink" href="#orientation" title="Link to this heading"></a></h3>
-<p>The orientation detection feature gives information on an orientation change of the SMI230 with respect to the gravitational field vector g. There are the orientations face up / face down, and orthogonal to that portrait upright, landscape left, portrait upside down and landscape right. For more details see SMI230 TCD 7.14</p>
+<p>The orientation detection feature gives information on an orientation change of the SMI230 with respect to the gravitational field vector g. There are the orientations face up / face down, and orthogonal to that portrait upright, landscape left, portrait upside down and landscape right. For more details see SMI230 TCD</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map face up/down event to IIO event type <strong>“change”</strong> and portrait/landscape event to IIO event type <strong>“mag”</strong></p>
@@ -882,10 +877,10 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </section>
 <section id="data-synchronization">
 <h3>5.4 Data Synchronization<a class="headerlink" href="#data-synchronization" title="Link to this heading"></a></h3>
-<p>To achieve data synchronization on SMI230, the new data interrupt signal from the gyroscope of the SMI230 needs to be connected to one of the interrupt pins of the SMI230 accelerometer (which can be configured as input pins). The internal signal processing unit of the accelerometer uses the data ready signal from the gyroscope to synchronize and interpolate the data of the accelerometer, considering the group delay of the sensors. The accelerometer part can then notify the host of available data. With this technique, it is possible to achieve synchronized data and provide accelerometer data at an ODR up to 2 kHz. The data synchronization feature supports 100 Hz, 200 Hz, 400 Hz, 1 kHz and 2 kHz data rates. For more details see SMI230 TCD 7.10</p>
+<p>To achieve data synchronization on SMI230, the new data interrupt signal from the gyroscope of the SMI230 needs to be connected to one of the interrupt pins of the SMI230 accelerometer (which can be configured as input pins). The internal signal processing unit of the accelerometer uses the data ready signal from the gyroscope to synchronize and interpolate the data of the accelerometer, considering the group delay of the sensors. The accelerometer part can then notify the host of available data. With this technique, it is possible to achieve synchronized data and provide accelerometer data at an ODR up to 2 kHz. The data synchronization feature supports 100 Hz, 200 Hz, 400 Hz, 1 kHz and 2 kHz data rates. For more details see SMI230 TCD</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>SMI230 Linux driver only support the application schematic defined in TCD 7.10.2. The SMI230 interrupt pins INT1 (ACC) and INT3 (GYR) have to be connected externally on the PCB. The GYR new data interrupt needs to be mapped to INT3, while INT1 needs to be configured as an input pin. For a data ready host notification, the interrupt pin INT2 (ACC) shall be used.</p>
+<p>SMI230 Linux driver only support the application schematic defined in TCD. The SMI230 interrupt pins INT1 (ACC) and INT3 (GYR) have to be connected externally on the PCB. The GYR new data interrupt needs to be mapped to INT3, while INT1 needs to be configured as an input pin. For a data ready host notification, the interrupt pin INT2 (ACC) shall be used.</p>
 </div>
 <ul class="simple">
 <li><p>Re-config ther kernel to activate data synchronization</p></li>
@@ -960,12 +955,12 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </div>
 <p>Enable acc and set output data rate to 100 Hz</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">su</span>
-<span class="n">root</span><span class="nd">@raspberrypi</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># echo normal &gt; /sys/bus/iio/devices/iio\:device1/power_mode</span>
-<span class="n">root</span><span class="nd">@raspberrypi</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># echo 100 &gt; /sys/bus/iio/devices/iio\:device1/sampling_frequency</span>
+<span class="n">root</span><span class="nd">@host</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># echo normal &gt; /sys/bus/iio/devices/iio\:device1/power_mode</span>
+<span class="n">root</span><span class="nd">@host</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># echo 100 &gt; /sys/bus/iio/devices/iio\:device1/sampling_frequency</span>
 </pre></div>
 </div>
 <p>Read data from buffer</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@raspberrypi</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># ./iio_generic_buffer -N 1 -c -1 -a</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@host</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">pi</span><span class="c1"># ./iio_generic_buffer -N 1 -c -1 -a</span>
 <span class="n">iio</span> <span class="n">device</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">1</span>
 <span class="n">iio</span> <span class="n">trigger</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">0</span>
 <span class="n">Enabling</span> <span class="nb">all</span> <span class="n">channels</span>

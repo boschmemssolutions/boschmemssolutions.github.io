@@ -111,11 +111,8 @@ SMI240 Shuttle Pin	Function
   
 - Clone Linux kernel 
 
-::
 
-  git clone --depth=1 --branch <branch_name> https://github.com/raspberrypi/linux
-
-We use kernel v5.15, replace <branch_name> with "rpi-5.15.y"
+We use kernel v5.15.
 
 - Clone SMI240 IIO Linux driver
 

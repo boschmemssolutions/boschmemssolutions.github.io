@@ -128,7 +128,7 @@ angular rate (gyroscopic) measurement with intelligent on-chip motion-triggered 
 3.1 Required Software
 ----------------------
 
-#. Linux kernel https://github.com/raspberrypi/linux
+#. Linux kernel (kernel version 5.15)
 #. SMI330 IIO Linux driver https://github.com/boschmemssolutions/SMI330-Linux-Driver-IIO
 #. Linux environment (native or as VM) 
 
@@ -146,11 +146,9 @@ angular rate (gyroscopic) measurement with intelligent on-chip motion-triggered 
   
 - Clone Linux kernel 
 
-::
 
-  $ git clone --depth=1 --branch <branch_name> https://github.com/raspberrypi/linux
 
-For the example, we use kernel v5.15, replace <branch_name> with "rpi-5.15.y"
+For the example, we use kernel v5.15.
 
 - Clone SMI330 IIO Linux driver
 
@@ -393,7 +391,7 @@ Power on the board. We firstly check if the driver was initialized properly
   $ dmesg | grep SMI330
     SMI330 spi0.0: Bosch Sensor Device SMI330 initialization successful
     SMI330 spi0.0: unregister SMI330
-    SMI330 spi0.0: Chip ID: 0x0041
+    SMI330 spi0.0: Chip ID: 0x0042
     SMI330 spi0.0: Bosch Sensor SPI Device SMI330 initialization successful
    
    
@@ -637,12 +635,12 @@ Set IIO buffer length (the length is independent of the activated channels, each
           (e.g. if all channels are activated and the HW FIFO watermark is set to 42, the IIO buffer length should be at least 6 (= 42 / (3 + 3 + 1))).
 
 
-5. SMI330 Firmware Features
+5. SMI330 Advanced Features
 ============================
 
-To use the firmware features the advanced feature engine must be enabled by calling menuconfig as described in `build_smi330`_.
+To use the advanced Features the advanced feature engine must be enabled by calling menuconfig as described in `build_smi330`_.
 
-Some of the firmware features uses IIO event to signal the user space application that some sensor event happened (e.g. sampling value over threshold).
+Some of the advanced Features uses IIO event to signal the user space application that some sensor event happened (e.g. sampling value over threshold).
 To read the event from user space, the Linux kernel provides a C program under tools/iio.
 And we need to firstly compile and upload it to the target board.
 
@@ -665,7 +663,7 @@ The parameter hysteresis controls the sensitivity of the interrupt to be rethrow
 It ensures that the slope must exceed the threshold by a certain margin (hysteresis value) before the interrupt is triggered again. 
 This helps prevent false triggers due to small fluctuations in the slope.
 
-.. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type **"roc"** and direction **"rising"**
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type **"roc"** and direction **"rising"**
 
 anymotion configuration is able to be found under
 
@@ -712,7 +710,7 @@ The parameter hysteresis controls the sensitivity of the interrupt to be rethrow
 It ensures that the slope must exceed the threshold by a certain margin (hysteresis value) before the interrupt is triggered again. 
 This helps prevent false triggers due to small fluctuations in the slope.
 
-.. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"roc"** and direction **"falling"**
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"roc"** and direction **"falling"**
 
 nomotion configuration is able to be found under
 
@@ -752,7 +750,7 @@ A tilt interrupt is reported when the attitude angle of the device changes by a 
 By adjusting the value of `segment_size`, you can control the length of the time interval over which the estimation is performed.
 The parameter `beta_acc_mean` is used to configure the lowpass filtering for the continuous estimation of the gravity acceleration vector. 
 
-.. note:: Currently the event type defined by the Linux IIO is not able to cover our firmware features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"change"** and direction **"either"**
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"change"** and direction **"either"**
 
 ::
 
