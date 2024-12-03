@@ -68,7 +68,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#check-power-mode-and-activate">4.2 Check power mode and activate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#read-data-from-sensor">4.3 Read data from sensor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#change-sensor-settings">4.4 Change sensor settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#set-operation-mode">4.5 Set operation mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#operation-mode">4.5 Operation mode</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#polling">Polling:</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#new-data">New data:</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#fifo">FIFO:</a></li>
@@ -283,7 +283,7 @@ angular rate (gyroscopic) measurement with intelligent on-chip motion-triggered 
 <section id="required-software">
 <h3>3.1 Required Software<a class="headerlink" href="#required-software" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
-<li><p>Linux kernel (kernel version 5.15)</p></li>
+<li><p>Linux kernel <a class="reference external" href="https://github.com/raspberrypi/linux">https://github.com/raspberrypi/linux</a></p></li>
 <li><p>SMI330 IIO Linux driver <a class="reference external" href="https://github.com/boschmemssolutions/SMI330-Linux-Driver-IIO">https://github.com/boschmemssolutions/SMI330-Linux-Driver-IIO</a></p></li>
 <li><p>Linux environment (native or as VM)</p></li>
 </ol>
@@ -305,7 +305,10 @@ $ sudo apt install git bc bison flex libssl-dev make libc6-dev libncurses5-dev
 <ul class="simple">
 <li><p>Clone Linux kernel</p></li>
 </ul>
-<p>For the example, we use kernel v5.15.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone --depth=1 --branch &lt;branch_name&gt; https://github.com/raspberrypi/linux
+</pre></div>
+</div>
+<p>For the example, we use kernel v5.15, replace &lt;branch_name&gt; with “rpi-5.15.y”</p>
 <ul class="simple">
 <li><p>Clone SMI330 IIO Linux driver</p></li>
 </ul>
@@ -348,6 +351,8 @@ $ sudo apt install git bc bison flex libssl-dev make libc6-dev libncurses5-dev
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">dts</span><span class="o">-</span><span class="n">v1</span><span class="o">/</span><span class="p">;</span>
 <span class="o">/</span><span class="n">plugin</span><span class="o">/</span><span class="p">;</span>
 
+<span class="c1">#include &lt;dt-bindings/interrupt-controller/irq.h&gt;</span>
+
 <span class="o">/</span> <span class="p">{</span>
     <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;brcm,bcm2835&quot;</span><span class="p">;</span>
 
@@ -373,11 +378,12 @@ $ sudo apt install git bc bison flex libssl-dev make libc6-dev libncurses5-dev
             <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
 
             <span class="n">smi330</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
-                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;BOSCH,SMI330&quot;</span><span class="p">;</span>
+                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi330&quot;</span><span class="p">;</span>
                 <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">10000000</span><span class="o">&gt;</span><span class="p">;</span>
                 <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
                 <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
-                <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span> <span class="n">IRQ_TYPE_EDGE_RISING</span> <span class="o">*/</span>
+                <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">&gt;</span><span class="p">;</span>
+                <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;INT1&quot;</span><span class="p">,</span> <span class="s2">&quot;INT2&quot;</span><span class="p">;</span>
             <span class="p">};</span>
         <span class="p">};</span>
     <span class="p">};</span>
@@ -399,6 +405,8 @@ smi330-spi.dtbo<span class="w"> </span><span class="se">\</span>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">dts</span><span class="o">-</span><span class="n">v1</span><span class="o">/</span><span class="p">;</span>
 <span class="o">/</span><span class="n">plugin</span><span class="o">/</span><span class="p">;</span>
 
+<span class="c1">#include &lt;dt-bindings/interrupt-controller/irq.h&gt;</span>
+
 <span class="o">/</span> <span class="p">{</span>
     <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;brcm,bcm2835&quot;</span><span class="p">;</span>
 
@@ -410,10 +418,11 @@ smi330-spi.dtbo<span class="w"> </span><span class="se">\</span>
             <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
 
             <span class="n">smi330</span><span class="p">:</span> <span class="n">smi330</span><span class="o">@</span><span class="mi">68</span> <span class="p">{</span>
-                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;Bosch,SMI330&quot;</span><span class="p">;</span>
+                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi330&quot;</span><span class="p">;</span>
                 <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x68</span><span class="o">&gt;</span><span class="p">;</span>
                 <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
-                <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span> <span class="n">IRQ_TYPE_EDGE_RISING</span> <span class="o">*/</span>
+                <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">&gt;</span><span class="p">;</span>
+                <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;INT1&quot;</span><span class="p">,</span> <span class="s2">&quot;INT2&quot;</span><span class="p">;</span>
                 <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
             <span class="p">};</span>
         <span class="p">};</span>
@@ -458,11 +467,10 @@ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
       <span class="o">-*-</span>     <span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">triggered</span> <span class="n">buffer</span> <span class="n">support</span>
 
       <span class="n">Inertial</span> <span class="n">measurement</span> <span class="n">units</span>  <span class="o">---&gt;</span>
-          <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI330</span> <span class="n">Inertial</span> <span class="n">Measurement</span> <span class="n">Unit</span>
+        <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI330</span> <span class="n">Inertial</span> <span class="n">Measurement</span> <span class="n">Unit</span>
               <span class="n">Select</span> <span class="n">communication</span> <span class="n">interface</span> <span class="p">(</span><span class="n">Enable</span> <span class="n">SPI</span> <span class="n">connection</span><span class="p">)</span>  <span class="o">---&gt;</span>
-              <span class="n">Select</span> <span class="n">operating</span> <span class="n">mode</span> <span class="p">(</span><span class="n">Polling</span> <span class="n">mode</span><span class="p">)</span>  <span class="o">---&gt;</span>
-              <span class="n">Map</span> <span class="n">data</span> <span class="n">interrupt</span> <span class="p">(</span><span class="n">NONE</span><span class="p">)</span>  <span class="o">---&gt;</span>
-              <span class="n">Enable</span> <span class="n">advanced</span> <span class="n">features</span> <span class="p">(</span><span class="n">Disable</span> <span class="n">advanced</span> <span class="n">features</span><span class="p">)</span>  <span class="o">---&gt;</span>
+              <span class="n">Map</span> <span class="n">data</span> <span class="n">interrupt</span> <span class="p">(</span><span class="n">INT1</span><span class="p">)</span>  <span class="o">---&gt;</span>
+              <span class="n">Map</span> <span class="n">advanced</span> <span class="n">features</span> <span class="n">interrupt</span> <span class="p">(</span><span class="n">INT2</span><span class="p">)</span>  <span class="o">---&gt;</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -519,15 +527,7 @@ $ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <h2>4. Work with SMI330 Linux driver<a class="headerlink" href="#work-with-smi330-linux-driver" title="Link to this heading"></a></h2>
 <section id="preparation">
 <h3>4.1 Preparation<a class="headerlink" href="#preparation" title="Link to this heading"></a></h3>
-<p>Power on the board. We firstly check if the driver was initialized properly</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ dmesg | grep SMI330
-  SMI330 spi0.0: Bosch Sensor Device SMI330 initialization successful
-  SMI330 spi0.0: unregister SMI330
-  SMI330 spi0.0: Chip ID: 0x0042
-  SMI330 spi0.0: Bosch Sensor SPI Device SMI330 initialization successful
-</pre></div>
-</div>
-<p>If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folder, which we can use to read/write data from/to the sensor</p>
+<p>Power on the board. If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folder, which we can use to read/write data from/to the sensor</p>
 <blockquote>
 <div><p>/sys/bus/iio/devices/iio:device0</p>
 </div></blockquote>
@@ -537,7 +537,7 @@ $ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd /sys/bus/iio/devices/iio:device0
 $ cat name
-SMI330
+smi330
 </pre></div>
 </div>
 <p>Work with driver using command line</p>
@@ -551,13 +551,13 @@ SMI330
 </section>
 <section id="check-power-mode-and-activate">
 <span id="power-mode"></span><h3>4.2 Check power mode and activate<a class="headerlink" href="#check-power-mode-and-activate" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat smi_acc/acc_mode
-$ acc_mode : 0x00
-$ echo 4 &gt; smi_acc/acc_mode
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat in_accel_en
+0
+$ echo 4 &gt; in_accel_en
 
-$ cat smi_gyro/gyr_mode
-$ gyr_mode : 0x00
-$ echo 4 &gt; smi_gyro/gyr_mode
+$ cat in_anglvel_en
+0
+$ echo 4 &gt; in_anglvel_en
 </pre></div>
 </div>
 <div class="admonition note">
@@ -567,43 +567,67 @@ $ echo 4 &gt; smi_gyro/gyr_mode
 </section>
 <section id="read-data-from-sensor">
 <span id="read-data"></span><h3>4.3 Read data from sensor<a class="headerlink" href="#read-data-from-sensor" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat in_accel_x\&amp;y\&amp;z_raw
-21 -87 4135
-$ cat in_anglvel_x\&amp;y\&amp;z_raw
-2 -1 2
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat in_accel_x_raw
+21
+$ cat in_accel_y_raw
+-87
+$ cat in_accel_z_raw
+4180
+$ cat in_anglvel_x_raw
+2
+$ cat in_anglvel_y_raw
+-1
+$ cat in_anglvel_z_raw
+1
 $ cat in_temp_object_raw
-255
+1697
 </pre></div>
+</div>
+<p>To convert raw data to physical values, we can read scale and offset values</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat in_accel_scale
+0.000244140
+$ cat in_anglvel_scale
+0.003814697
+$ cat in_temp_object_scale
+0.001953125
+$ cat in_temp_object_offset
+11776
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">Accel[g]     = accel_raw +  * accel_scale</div>
+<div class="line">Anglvel[°/s] = anglvel_raw +  * anglvel_scale</div>
+<div class="line">T[°C]        = (temp_raw + temp_offset) * temp_scale</div>
 </div>
 </section>
 <section id="change-sensor-settings">
 <h3>4.4 Change sensor settings<a class="headerlink" href="#change-sensor-settings" title="Link to this heading"></a></h3>
 <p>Set output data rate (for accelerometer and gyroscope)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 100 &gt; smi_basic/odr
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 100 &gt; in_sampling_frequency
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>0 = 0.78125 Hz, 1 = 1.5625 Hz, 3 = 3.125 Hz, 6 = 6.25 Hz, 12 = 12.5 Hz, 25 = 25 Hz, 50 = 50 Hz, 100 = 100 Hz, 200 = 200 Hz, 400 = 400 Hz, 800 = 800 Hz, 1600 = 1600 Hz, 3200 = 3200 Hz, 6400 = 6400 Hz</p>
 </div>
-<p>Set accelerometer range</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 4 &gt; smi_acc/acc_range
+<p>Set accelerometer scale</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0.000244140 &gt; in_accel_scale
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>2 = 2 g, 4 = 4 g, 8 = 8 g, 16 = 16 g</p>
+<p>0.000061035 = 1/16384 (2 g), 0.000122070 = 1/8192 (4 g), 0.000244140 = 1/4096 (8 g), 0.000488281 = 1/2048 (16 g)</p>
 </div>
-<p>Set gyroscope range</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 1000 &gt; smi_gyro/gyr_range
+<p>Set gyroscope scale</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0.003814697 &gt; in_anglvel_scale
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>125 = 125 °/s, 250 = 250 °/s , 500 = 500 °/s</p>
+<p>0.003814697 = 1/262.144 (125 °/s), 0.007629395 = 1/131.072 (250 °/s) , 0.015258789 = 1/65.536 (500 °/s)</p>
 </div>
 <p>Set accelerometer averaging</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 8 &gt; smi_acc/acc_avg_num
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 8 &gt; in_accel_oversampling_ratio
 </pre></div>
 </div>
 <div class="admonition note">
@@ -611,7 +635,7 @@ $ cat in_temp_object_raw
 <p>Possible averaging values: 1, 2, 4, 8, 16, 32, 64</p>
 </div>
 <p>Set gyroscope averaging</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 8 &gt; smi_gyro/gyr_avg_num
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 8 &gt; in_anglvel_oversampling_ratio
 </pre></div>
 </div>
 <div class="admonition note">
@@ -619,32 +643,33 @@ $ cat in_temp_object_raw
 <p>Possible averaging values: 1, 2, 4, 8, 16, 32, 64</p>
 </div>
 <p>Set the -3dB cut-off frequency for the accelerometer</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0 &gt; smi_acc/acc_bw
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 2 &gt; in_accel_filter_low_pass_3db_frequency
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>0 = acc_odr/2, 1 = acc_odr/4</p>
+<p>2 = acc_odr/2, 4 = acc_odr/4</p>
 </div>
 <p>Set the -3dB cut-off frequency for the gyroscope</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0 &gt; smi_gyro/gyr_bw
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 2 &gt; in_anglvel_filter_low_pass_3db_frequency
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>0 = gyr_odr/2, 1 = gyr_odr/4</p>
+<p>2 = gyr_odr/2, 4 = gyr_odr/4</p>
 </div>
 </section>
-<section id="set-operation-mode">
-<span id="operation-mode"></span><h3>4.5 Set operation mode<a class="headerlink" href="#set-operation-mode" title="Link to this heading"></a></h3>
+<section id="operation-mode">
+<span id="id1"></span><h3>4.5 Operation mode<a class="headerlink" href="#operation-mode" title="Link to this heading"></a></h3>
 <p>The driver supports different operation modes:</p>
 <ul class="simple">
 <li><p>Polling</p></li>
 <li><p>New data</p></li>
-<li><p>FIFO (watermark and full)</p></li>
+<li><p>FIFO</p></li>
 </ul>
-<p>To set the operation mode call menuconfig as described in <a class="reference internal" href="#build-smi330">build_smi330</a> and build the driver.
-For all modes except “New data”, the data interrupt must be mapped to INT1 or INT2.</p>
+<p>If no data interrupt is mapped, only polling mode is available.
+If a data interrupt is mapped the default operation mode is “New data”.
+To change to “FIFO” mode, set a buffer watermark &gt; 0 (see below).</p>
 <section id="polling">
 <h4>Polling:<a class="headerlink" href="#polling" title="Link to this heading"></a></h4>
 <p>In “Polling” mode no interrupt is used and no data is pushed to the IIO buffer. One can simply <a class="reference internal" href="#read-data">read_data</a> by polling the sysfs entries.</p>
@@ -655,7 +680,7 @@ For all modes except “New data”, the data interrupt must be mapped to INT1 o
 </section>
 <section id="fifo">
 <h4>FIFO:<a class="headerlink" href="#fifo" title="Link to this heading"></a></h4>
-<p>In “FIFO” mode an interrupt is triggered when the watermark level is reached or when the HW FIFO is full, depending on the configuration.
+<p>In “FIFO” mode an interrupt is triggered when the watermark level is reached.
 The HW FIFO data is then copied to the IIO buffer. The HW FIFO overwrites oldest data on buffer full condition.</p>
 <p>The HW FIFO has a size of 2048 bytes.
 Order and size of sources to the HW FIFO (timestamp is calculated by the driver, the sensor oscillator is not used, therefore excluded from HW FIFO):</p>
@@ -670,13 +695,13 @@ Order and size of sources to the HW FIFO (timestamp is calculated by the driver,
 <tbody>
 <tr class="row-even"><td><p>1</p></td>
 <td><p>Accelerometer</p></td>
-<td><p>3</p></td>
+<td><p>3 * 1</p></td>
 <td><p>Acceleration with one 16bit word for each axis x,
 y and z</p></td>
 </tr>
 <tr class="row-odd"><td><p>2</p></td>
 <td><p>Gyroscope</p></td>
-<td><p>3</p></td>
+<td><p>3 * 1</p></td>
 <td><p>Angular rate with one 16bit word for each axis x,
 y and z</p></td>
 </tr>
@@ -688,17 +713,34 @@ y and z</p></td>
 </tbody>
 </table>
 <p>The HW FIFO fill level and the HW FIFO watermark level are specified in word size according to the table above.</p>
-<p>Get HW FIFO fill level</p>
+<p>Get HW FIFO watermark level (word size, see table above)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat buffer0/hwfifo_watermark
+</pre></div>
+</div>
+<p>Get HW FIFO fill level (word size, see table above)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat buffer0/hwfifo_fill_level
 </pre></div>
 </div>
-<p>Set HW FIFO watermark level</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 256 &gt; buffer0/hwfifo_watermark
+<p>Set IIO buffer length (the length is independent of the activated channels, each entry in the buffer contains the data of the activated channels)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 256 &gt; buffer0/length
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Valid range: 1 … 1023 (word size, see table above)</p>
+<p>In FIFO mode, the length of the IIO buffer should be large enough to hold all entries in the HW FIFO to prevent data loss
+(e.g. if all channels are activated and the HW FIFO watermark is set to 42, the IIO buffer length should be at least 6 (= 42 / (3 + 3 + 1))).</p>
+</div>
+<p>To set the HW FIFO watermark level, the watermark of the IIO buffer needs to be set (number of entries)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 64 &gt; buffer0/watermark
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The IIO buffer watermark level has to be &lt;= IIO buffer length</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The HW FIFO watermark level is the IIO buffer watermark level multiplied by the word size of the activated channels.</p>
 </div>
 </section>
 </section>
@@ -717,7 +759,7 @@ $ scp tools/iio/iio_generic_buffer to your board
 <p class="admonition-title">Note</p>
 <p>To get sensor data, the <a class="reference internal" href="#power-mode">power_mode</a> must not be in “Suspend” mode and the <a class="reference internal" href="#operation-mode">operation_mode</a> must not be “Polling”.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ./iio_generic_buffer -n SMI330 -a -g -l 256 -c -1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ./iio_generic_buffer -n smi330 -a -g -l 256 -c -1
 iio device number being used is 0
 trigger-less mode selected
 Enabling all channels
@@ -747,27 +789,22 @@ The second value represents the gyroscope values X,Y and Z (16 bit each).
 The third value represents the temperature value.
 The fourth value represents the timestamp in ns.</p>
 <p>Instead of auto-activate all channels, we can de-/activate the channels manually</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0 &gt; buffer0/in_anglvel_x&amp;y&amp;z_en
-$ echo 1 &gt; buffer0/in_accel_x&amp;y&amp;z_en
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0 &gt; buffer0/in_anglvel_x_en
+$ echo 0 &gt; buffer0/in_anglvel_y_en
+$ echo 0 &gt; buffer0/in_anglvel_z_en
+$ echo 1 &gt; buffer0/in_accel_x_en
+$ echo 1 &gt; buffer0/in_accel_y_en
+$ echo 1 &gt; buffer0/in_accel_z_en
 $ echo 1 &gt; buffer0/in_timestamp_en
 $ echo 0 &gt; buffer0/in_temp_object_en
 </pre></div>
-</div>
-<p>Set IIO buffer length (the length is independent of the activated channels, each entry in the buffer contains the data of the activated channels)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 256 &gt; buffer0/length
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In FIFO mode, the length of the IIO buffer should be large enough to hold all entries in the HW FIFO to prevent data loss
-(e.g. if all channels are activated and the HW FIFO watermark is set to 42, the IIO buffer length should be at least 6 (= 42 / (3 + 3 + 1))).</p>
 </div>
 </section>
 </section>
 <section id="smi330-advanced-features">
 <h2>5. SMI330 Advanced Features<a class="headerlink" href="#smi330-advanced-features" title="Link to this heading"></a></h2>
-<p>To use the advanced Features the advanced feature engine must be enabled by calling menuconfig as described in <a class="reference internal" href="#build-smi330">build_smi330</a>.</p>
-<p>Some of the advanced Features uses IIO event to signal the user space application that some sensor event happened (e.g. sampling value over threshold).
+<p>To use the advanced features the advanced feature engine must be enabled by calling menuconfig as described in <a class="reference internal" href="#build-smi330">build_smi330</a>.</p>
+<p>Some of the advanced features uses IIO event to signal the user space application that some sensor event happened (e.g. sampling value over threshold).
 To read the event from user space, the Linux kernel provides a C program under tools/iio.
 And we need to firstly compile and upload it to the target board.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd tools
@@ -786,23 +823,25 @@ It ensures that the slope must exceed the threshold by a certain margin (hystere
 This helps prevent false triggers due to small fluctuations in the slope.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type <strong>“roc”</strong> and direction <strong>“rising”</strong></p>
+<p>Currently the event type defined by the Linux IIO is not able to cover our advanced features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type <strong>“roc”</strong> and direction <strong>“rising”</strong></p>
 </div>
 <p>anymotion configuration is able to be found under</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/sys/bus/iio/devices/iio:deviceX/events
-├── &#39;in_accel_x&amp;y&amp;z_roc_rising_en&#39;                    // enable/disable any motion x&amp;y&amp;z-axis
+├── in_accel_x_roc_rising_en                          // enable/disable any motion x-axis
+├── in_accel_y_roc_rising_en                          // enable/disable any motion y-axis
+├── in_accel_z_roc_rising_en                          // enable/disable any motion z-axis
 ├── roc_rising_hysteresis                             // configure any motion hysteresis
 ├── roc_rising_period                                 // configure any motion duration
 ├── roc_rising_timeout                                // configure any motion wait_time
 └── roc_rising_value                                  // configure any motion threshold
 </pre></div>
 </div>
-<p>enable any motion x&amp;y&amp;z-axis with default configuration</p>
+<p>enable any motion x-axis with default configuration</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
-$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&amp;y\&amp;z_roc_rising_en
-$ ./iio_event_monitor SMI330
-Found IIO device with name SMI330 with device number 0
+$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/in_accel_en
+$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/in_accel_x_roc_rising_en
+$ ./iio_event_monitor smi330
+Found IIO device with name smi330 with device number 0
 </pre></div>
 </div>
 <p>We will see the anymotion events as following if moving the sensor</p>
@@ -826,11 +865,13 @@ It ensures that the slope must exceed the threshold by a certain margin (hystere
 This helps prevent false triggers due to small fluctuations in the slope.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type <strong>“roc”</strong> and direction <strong>“falling”</strong></p>
+<p>Currently the event type defined by the Linux IIO is not able to cover our advanced features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type <strong>“roc”</strong> and direction <strong>“falling”</strong></p>
 </div>
 <p>nomotion configuration is able to be found under</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/sys/bus/iio/devices/iio:deviceX/events
-├── &#39;in_accel_x&amp;y&amp;z_roc_falling_en&#39;                    // enable/disable no motion x&amp;y&amp;z-axis
+├── in_accel_x_roc_falling_en                          // enable/disable no motion x-axis
+├── in_accel_y_roc_falling_en                          // enable/disable no motion y-axis
+├── in_accel_z_roc_falling_en                          // enable/disable no motion z-axis
 ├── roc_falling_hysteresis                             // configure no motion hysteresis
 ├── roc_falling_period                                 // configure no motion duration
 ├── roc_falling_timeout                                // configure no motion wait_time
@@ -839,14 +880,14 @@ This helps prevent false triggers due to small fluctuations in the slope.</p>
 </div>
 <p>enable no motion x-axis with default configuration</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
-$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&amp;y\&amp;z_roc_falling_en
-$ ./iio_event_monitor SMI330
-Found IIO device with name SMI330 with device number 0
-Event: time: 1667845513396539597, type: accel(x&amp;y&amp;z), channel: 0, evtype: roc, direction: falling
-Event: time: 1667845513416250976, type: accel(x&amp;y&amp;z), channel: 0, evtype: roc, direction: falling
-Event: time: 1667845513435964698, type: accel(x&amp;y&amp;z), channel: 0, evtype: roc, direction: falling
-Event: time: 1667845513455680347, type: accel(x&amp;y&amp;z), channel: 0, evtype: roc, direction: falling
+$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/in_accel_en
+$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/in_accel_x_roc_falling_en
+$ ./iio_event_monitor smi330
+Found IIO device with name smi330 with device number 0
+Event: time: 1667845513396539597, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
+Event: time: 1667845513416250976, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
+Event: time: 1667845513435964698, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
+Event: time: 1667845513455680347, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
 </pre></div>
 </div>
 </section>
@@ -861,10 +902,10 @@ By adjusting the value of <cite>segment_size</cite>, you can control the length 
 The parameter <cite>beta_acc_mean</cite> is used to configure the lowpass filtering for the continuous estimation of the gravity acceleration vector.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type <strong>“change”</strong> and direction <strong>“either”</strong></p>
+<p>Currently the event type defined by the Linux IIO is not able to cover our advanced features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type <strong>“change”</strong> and direction <strong>“either”</strong></p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/sys/bus/iio/devices/iio:deviceX/events
-├── &#39;in_accel_x&amp;y&amp;z_change_either_en&#39;                  // enable/disable no motion x&amp;y&amp;z-axis
+├── in_accel_change_either_en                          // enable/disable tilt detection
 ├── change_either_low_pass_filter_3db                  // configure tilt low pass filter
 ├── change_either_period                               // configure tilt duration
 └── change_either_value                                // configure tilt minimum tilt angle
@@ -872,17 +913,17 @@ The parameter <cite>beta_acc_mean</cite> is used to configure the lowpass filter
 </div>
 <p>enable tilt detection with default configuration</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
-$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&amp;y\&amp;z_change_either_en
-$ ./iio_event_monitor SMI330
-Found IIO device with name SMI330 with device number 0
+$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/in_accel_en
+$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/in_accel_change_either_en
+$ ./iio_event_monitor smi330
+Found IIO device with name smi330 with device number 0
 </pre></div>
 </div>
 <p>tilt the sensor to see the following events</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449136664221930</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">&amp;</span><span class="n">y</span><span class="o">&amp;</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
-<span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449140245313491</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">&amp;</span><span class="n">y</span><span class="o">&amp;</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
-<span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449143001386615</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">&amp;</span><span class="n">y</span><span class="o">&amp;</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
-<span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449145516049322</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">&amp;</span><span class="n">y</span><span class="o">&amp;</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449136664221930</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">|</span><span class="n">y</span><span class="o">|</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
+<span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449140245313491</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">|</span><span class="n">y</span><span class="o">|</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
+<span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449143001386615</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">|</span><span class="n">y</span><span class="o">|</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
+<span class="n">Event</span><span class="p">:</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1703449145516049322</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">accel</span><span class="p">(</span><span class="n">x</span><span class="o">|</span><span class="n">y</span><span class="o">|</span><span class="n">z</span><span class="p">),</span> <span class="n">channel</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">evtype</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">either</span>
 </pre></div>
 </div>
 </section>
@@ -895,7 +936,8 @@ the gyroscope sensitivity error is also known as component re-trim (CRT).</p>
 preferred in the range of 25 Hz up to 200 Hz and the alternative sensor configurations for accelerometer and gyroscope must be disabled.</p>
 <p>If these preconditions are not fulfilled, the driver will make sure they are fulfilled by changing appropriate register values and then
 restore the configuration after the self calibration has been performed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat smi_adv/self_cal
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
+$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/self_cal
 </pre></div>
 </div>
 </section>
@@ -908,22 +950,22 @@ alternative configuration. The switching is initiated by events of enabled advan
 The advanced feature engine and interrupts must be enabled for the Auto-Operation mode to take effect.</p>
 <p>Accelerometer change enable of Auto-Operation mode is done by</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 0 &gt; /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+$ echo 0 &gt; /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 </pre></div>
 </div>
 <p>Gyroscope change enable of Auto-Operation mode is done by</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 </pre></div>
 </div>
 <p>Accelerometer and gyroscope change enable of Auto-Operation mode is done by</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 2 &gt; /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+$ echo 2 &gt; /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 </pre></div>
 </div>
 <p>Disabling of Auto-Operation mode is done by</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 3 &gt; /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+$ echo 3 &gt; /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 </pre></div>
 </div>
 <div class="admonition note">
@@ -933,7 +975,7 @@ $ echo 3 &gt; /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
 <p>The conditions to switch operation mode must be configured by selecting one of the advanced features that will trigger the Auto-Operation and from what operation mode should that feature trigger the change. The same advanced feature cannot be selected as a trigger for both user configuration and alternative configuration.</p>
 <p>Auto-Operation mode conditions can be configured by</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo x &gt; /sys/bus/iio/devices/iio\:device0/auto_op/set_auto_op_mode_cond
+$ echo x &gt; /sys/bus/iio/devices/iio\:device0/events/set_auto_op_mode_cond
 
  Possible values for x are
  ├── 0                                                 // Change to User settings by A_NO_MOTION
@@ -946,14 +988,14 @@ $ echo x &gt; /sys/bus/iio/devices/iio\:device0/auto_op/set_auto_op_mode_cond
 </div>
 <p>The configurations of the sensors can be instantly reset to the user configuration by directly writing from the host to either ACC_CONF or GYR_CONF. This operation can be enabled or disabled by</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/auto_op/config_user_overwrite
+$ echo 1 &gt; /sys/bus/iio/devices/iio\:device0/events/config_user_overwrite
 </pre></div>
 </div>
 <section id="set-alternative-configuration">
 <h4>Set alternative configuration:<a class="headerlink" href="#set-alternative-configuration" title="Link to this heading"></a></h4>
 <p>Set alternative output data rate (for accelerometer and gyroscope)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 100 &gt; smi_adv/alt_odr
+$ echo 100 &gt; /sys/bus/iio/devices/iio\:device0/events/alt_odr
 </pre></div>
 </div>
 <div class="admonition note">
@@ -962,7 +1004,7 @@ $ echo 100 &gt; smi_adv/alt_odr
 </div>
 <p>Set alternative accelerometer power mode</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 4 &gt; smi_adv/alt_acc_mode
+$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/events/alt_acc_mode
 </pre></div>
 </div>
 <div class="admonition note">
@@ -971,7 +1013,7 @@ $ echo 4 &gt; smi_adv/alt_acc_mode
 </div>
 <p>Set alternative gyroscope power mode</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 4 &gt; smi_adv/alt_gyr_mode
+$ echo 4 &gt; /sys/bus/iio/devices/iio\:device0/events/alt_gyr_mode
 </pre></div>
 </div>
 <div class="admonition note">
@@ -980,7 +1022,7 @@ $ echo 4 &gt; smi_adv/alt_gyr_mode
 </div>
 <p>Set alternative accelerometer averaging</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 8 &gt; smi_adv/alt_acc_avg_num
+$ echo 8 &gt; /sys/bus/iio/devices/iio\:device0/events/alt_acc_avg_num
 </pre></div>
 </div>
 <div class="admonition note">
@@ -989,7 +1031,7 @@ $ echo 8 &gt; smi_adv/alt_acc_avg_num
 </div>
 <p>Set alternative gyroscope averaging</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo su
-$ echo 8 &gt; smi_adv/alt_gyr_avg_num
+$ echo 8 &gt; /sys/bus/iio/devices/iio\:device0/events/alt_gyr_avg_num
 </pre></div>
 </div>
 <div class="admonition note">

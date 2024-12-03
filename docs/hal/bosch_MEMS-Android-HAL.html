@@ -63,7 +63,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#id1">4.1 Preparation for build</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-sensor-hal">4.2 Build Sensor HAL</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-sepolicy">4.3 Extend sepolicy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">4.3 Extend sepolicy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#check-execution">4.3 Check Execution</a></li>
 </ul>
 </li>
 </ul>
@@ -131,7 +131,7 @@
 <p class="admonition-title">Important</p>
 <p>Building the Android platform requires at least 32 GB RAM. The download and build process can take several hours and consumes approximately 300 GB of disk space.</p>
 </div>
-<p>It is recommended to use the following versions: android-13.0.0.
+<p>It is recommended to use the following version: android-13.0.0.
 All the Android distributions provide the platform and kernel in 2 different repositories. Therefore we need to firstly create 2 working folders for both platform and kernel.</p>
 <ul class="simple">
 <li><p>download kernel source</p></li>
@@ -156,9 +156,9 @@ All the Android distributions provide the platform and kernel in 2 different rep
 <h2>3. Integrate Linux driver into Android Kernel<a class="headerlink" href="#integrate-linux-driver-into-android-kernel" title="Link to this heading"></a></h2>
 <section id="preparation-for-build">
 <h3>3.1 Preparation for build<a class="headerlink" href="#preparation-for-build" title="Link to this heading"></a></h3>
-<p>Go to the “common” folder. this is the root folder of the kernel source. We use smi230 linux driver as example.</p>
+<p>Go to the “common” folder. This is the root folder of the kernel source. We use smi230 Linux driver as example.</p>
 <ul class="simple">
-<li><p>Copy the Linux driver in drivers/iio/imu</p></li>
+<li><p>copy the Linux driver in drivers/iio/imu</p></li>
 <li><p>add source “drivers/iio/imu/smi230/Kconfig” in Kconfig</p></li>
 <li><p>add obj-y += smi230/ in Makefile</p></li>
 </ul>
@@ -177,7 +177,7 @@ All the Android distributions provide the platform and kernel in 2 different rep
 </section>
 <section id="extend-device-tree">
 <h3>3.2 Extend device tree<a class="headerlink" href="#extend-device-tree" title="Link to this heading"></a></h3>
-<p>extend the device tree with the sensor entries. This part is very HW specific. Please consult your HW vendor, how to do it properly for your HW.</p>
+<p>Extend the device tree with the sensor entries. This part is very HW specific. Please consult your HW vendor, how to do it properly for your HW.</p>
 <p>If using spi, add the following device tree entry to spi sub tree.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">smi230acc</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
     <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230acc&quot;</span><span class="p">;</span>
@@ -229,7 +229,7 @@ All the Android distributions provide the platform and kernel in 2 different rep
 </section>
 <section id="integrate-sensor-hal-into-android-platform">
 <h2>4. Integrate Sensor HAL into Android Platform<a class="headerlink" href="#integrate-sensor-hal-into-android-platform" title="Link to this heading"></a></h2>
-<p>In the last section we extend the android kernel with our sensor driver. Now we need to integrate the sensor HAL into the android platform.</p>
+<p>In the last section we extended the Android kernel with our sensor driver. Now we need to integrate the sensor HAL into the Android platform.</p>
 <section id="id1">
 <h3>4.1 Preparation for build<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
 <ul class="simple">
@@ -238,7 +238,7 @@ All the Android distributions provide the platform and kernel in 2 different rep
 </ul>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>Be careful with the HAL Type and your Android version. HIDL HALs is not supported any more from android14. If you use Android14 or above, only the AIDL HALs shall be used.</p>
+<p>Be careful with the HAL Type and your Android version. HIDL HALs is not supported any more from Android 14. If you use Android 14 or above, only the AIDL HALs shall be used.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># For sensor hal 2.0
 PRODUCT_PACKAGES += android.hardware.sensors@2.0-service.bosch
@@ -266,7 +266,7 @@ PRODUCT_COPY_FILES += hardware/bosch/sensors/multihal/common/hals.conf:$(TARGET_
 
 lunch aosp-your-lunch-choice-userdebug
 
-There is dependency between the SW module. To build the sensor HAL we need to firstly the dependencies.
+There is dependency between the SW module. To build the sensor HAL we need to firstly build the dependencies.
 
     mmma hardware/bosch/sensors/hwctl
     mmma hardware/bosch/sensors/core
@@ -296,14 +296,14 @@ make bootimage systemimage vendorimage -j$(nproc)
 </pre></div>
 </div>
 </section>
-<section id="id2">
-<h3>4.3 Extend sepolicy<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<section id="check-execution">
+<h3>4.3 Check Execution<a class="headerlink" href="#check-execution" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">adb</span> <span class="n">connect</span>
 <span class="n">adb</span> <span class="n">shell</span>
 <span class="n">service</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">sensor</span>
 </pre></div>
 </div>
-<p>the android.hardware.sensors.ISensors.default service shall be started properly.</p>
+<p>The android.hardware.sensors.ISensors.default service shall be started properly.</p>
 </section>
 </section>
 </section>

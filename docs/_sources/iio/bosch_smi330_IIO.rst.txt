@@ -128,7 +128,7 @@ angular rate (gyroscopic) measurement with intelligent on-chip motion-triggered 
 3.1 Required Software
 ----------------------
 
-#. Linux kernel (kernel version 5.15)
+#. Linux kernel https://github.com/raspberrypi/linux
 #. SMI330 IIO Linux driver https://github.com/boschmemssolutions/SMI330-Linux-Driver-IIO
 #. Linux environment (native or as VM) 
 
@@ -146,9 +146,11 @@ angular rate (gyroscopic) measurement with intelligent on-chip motion-triggered 
   
 - Clone Linux kernel 
 
+::
 
+  $ git clone --depth=1 --branch <branch_name> https://github.com/raspberrypi/linux
 
-For the example, we use kernel v5.15.
+For the example, we use kernel v5.15, replace <branch_name> with "rpi-5.15.y"
 
 - Clone SMI330 IIO Linux driver
 
@@ -191,7 +193,7 @@ Open linux/drivers/iio/imu/Makefile and add the SMI330 entry
     obj-y += s.../
 
 
-- Add devicetree overlay    
+- Add devicetree overlay 
 
 .. collapse:: SPI
 
@@ -201,6 +203,8 @@ Open linux/drivers/iio/imu/Makefile and add the SMI330 entry
 
         /dts-v1/;
         /plugin/;
+
+        #include <dt-bindings/interrupt-controller/irq.h>
 
         / {
             compatible = "brcm,bcm2835";
@@ -227,11 +231,12 @@ Open linux/drivers/iio/imu/Makefile and add the SMI330 entry
                     status = "okay";
 
                     smi330@0 {
-                        compatible = "BOSCH,SMI330";
+                        compatible = "bosch,smi330";
                         spi-max-frequency = <10000000>;
                         reg = <0>;
                         interrupt-parent = <&gpio>;
-                        interrupts = <26 1>, <20 1>; /* IRQ_TYPE_EDGE_RISING */
+                        interrupts = <26 IRQ_TYPE_EDGE_RISING>, <20 IRQ_TYPE_EDGE_RISING>;
+                        interrupt-names = "INT1", "INT2";
                     };
                 };
             };
@@ -257,6 +262,8 @@ Open linux/drivers/iio/imu/Makefile and add the SMI330 entry
         /dts-v1/;
         /plugin/;
 
+        #include <dt-bindings/interrupt-controller/irq.h>
+
         / {
             compatible = "brcm,bcm2835";
 
@@ -268,10 +275,11 @@ Open linux/drivers/iio/imu/Makefile and add the SMI330 entry
                     status = "okay";
 
                     smi330: smi330@68 {
-                        compatible = "Bosch,SMI330";
+                        compatible = "bosch,smi330";
                         reg = <0x68>;
                         interrupt-parent = <&gpio>;
-                        interrupts = <26 1>, <20 1>; /* IRQ_TYPE_EDGE_RISING */
+                        interrupts = <26 IRQ_TYPE_EDGE_RISING>, <20 IRQ_TYPE_EDGE_RISING>;
+                        interrupt-names = "INT1", "INT2";
                         status = "okay";
                     };
                 };
@@ -317,12 +325,10 @@ Activate the option as following
         -*-     Industrial I/O triggered buffer support
         
         Inertial measurement units  --->
-            <*> Bosch Sensor SMI330 Inertial Measurement Unit
+          <*> Bosch Sensor SMI330 Inertial Measurement Unit
                 Select communication interface (Enable SPI connection)  --->
-                Select operating mode (Polling mode)  --->
-                Map data interrupt (NONE)  --->
-                Enable advanced features (Disable advanced features)  --->                                     
-        
+                Map data interrupt (INT1)  --->
+                Map advanced features interrupt (INT2)  --->
     
 - Build SMI330 Linux driver 
 
@@ -384,18 +390,7 @@ Take the SD card out and put it back in board.
 4.1 Preparation
 ----------------
 
-Power on the board. We firstly check if the driver was initialized properly
-
-::
-
-  $ dmesg | grep SMI330
-    SMI330 spi0.0: Bosch Sensor Device SMI330 initialization successful
-    SMI330 spi0.0: unregister SMI330
-    SMI330 spi0.0: Chip ID: 0x0042
-    SMI330 spi0.0: Bosch Sensor SPI Device SMI330 initialization successful
-   
-   
-If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folder, which we can use to read/write data from/to the sensor
+Power on the board. If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folder, which we can use to read/write data from/to the sensor
 
     /sys/bus/iio/devices/iio:device0
    
@@ -405,7 +400,7 @@ If the driver was installed properly, a folder will be created. A number of devi
 
   $ cd /sys/bus/iio/devices/iio:device0
   $ cat name
-  SMI330
+  smi330
     
 
 Work with driver using command line
@@ -424,13 +419,13 @@ Work with driver using command line
 
 ::
 
-  $ cat smi_acc/acc_mode 
-  $ acc_mode : 0x00
-  $ echo 4 > smi_acc/acc_mode
+  $ cat in_accel_en 
+  0
+  $ echo 4 > in_accel_en
 
-  $ cat smi_gyro/gyr_mode
-  $ gyr_mode : 0x00
-  $ echo 4 > smi_gyro/gyr_mode 
+  $ cat in_anglvel_en
+  0
+  $ echo 4 > in_anglvel_en
 
 .. note:: 0 = Suspend, 3 = Low power, 4 = Normal, 7 = Performance
 
@@ -442,13 +437,37 @@ Work with driver using command line
 
 ::
 
-  $ cat in_accel_x\&y\&z_raw 
-  21 -87 4135
-  $ cat in_anglvel_x\&y\&z_raw
-  2 -1 2
+  $ cat in_accel_x_raw 
+  21
+  $ cat in_accel_y_raw 
+  -87
+  $ cat in_accel_z_raw 
+  4180
+  $ cat in_anglvel_x_raw
+  2
+  $ cat in_anglvel_y_raw
+  -1
+  $ cat in_anglvel_z_raw
+  1
   $ cat in_temp_object_raw
-  255
+  1697
   
+To convert raw data to physical values, we can read scale and offset values
+
+::
+
+  $ cat in_accel_scale
+  0.000244140
+  $ cat in_anglvel_scale
+  0.003814697
+  $ cat in_temp_object_scale
+  0.001953125
+  $ cat in_temp_object_offset
+  11776
+
+| Accel[g]     = accel_raw +  * accel_scale
+| Anglvel[°/s] = anglvel_raw +  * anglvel_scale
+| T[°C]        = (temp_raw + temp_offset) * temp_scale
 
 4.4 Change sensor settings
 ---------------------------
@@ -457,31 +476,31 @@ Set output data rate (for accelerometer and gyroscope)
 
 ::
 
-  $ echo 100 > smi_basic/odr
+  $ echo 100 > in_sampling_frequency
    
 .. note:: 0 = 0.78125 Hz, 1 = 1.5625 Hz, 3 = 3.125 Hz, 6 = 6.25 Hz, 12 = 12.5 Hz, 25 = 25 Hz, 50 = 50 Hz, 100 = 100 Hz, 200 = 200 Hz, 400 = 400 Hz, 800 = 800 Hz, 1600 = 1600 Hz, 3200 = 3200 Hz, 6400 = 6400 Hz
 
-Set accelerometer range
+Set accelerometer scale
 
 ::
 
-  $ echo 4 > smi_acc/acc_range
-   
-.. note:: 2 = 2 g, 4 = 4 g, 8 = 8 g, 16 = 16 g
+  $ echo 0.000244140 > in_accel_scale
 
-Set gyroscope range
+.. note:: 0.000061035 = 1/16384 (2 g), 0.000122070 = 1/8192 (4 g), 0.000244140 = 1/4096 (8 g), 0.000488281 = 1/2048 (16 g)
+
+Set gyroscope scale
 
 ::
 
-  $ echo 1000 > smi_gyro/gyr_range
-   
-.. note:: 125 = 125 °/s, 250 = 250 °/s , 500 = 500 °/s
+  $ echo 0.003814697 > in_anglvel_scale
+
+.. note:: 0.003814697 = 1/262.144 (125 °/s), 0.007629395 = 1/131.072 (250 °/s) , 0.015258789 = 1/65.536 (500 °/s)
 
 Set accelerometer averaging
 
 ::
 
-  $ echo 8 > smi_acc/acc_avg_num 
+  $ echo 8 > in_accel_oversampling_ratio 
    
 .. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64
 
@@ -489,7 +508,7 @@ Set gyroscope averaging
 
 ::
 
-  $ echo 8 > smi_gyro/gyr_avg_num 
+  $ echo 8 > in_anglvel_oversampling_ratio
    
 .. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64
 
@@ -497,31 +516,32 @@ Set the -3dB cut-off frequency for the accelerometer
 
 ::
 
-  $ echo 0 > smi_acc/acc_bw
+  $ echo 2 > in_accel_filter_low_pass_3db_frequency
    
-.. note:: 0 = acc_odr/2, 1 = acc_odr/4
+.. note:: 2 = acc_odr/2, 4 = acc_odr/4
 
 Set the -3dB cut-off frequency for the gyroscope
 
 ::
 
-  $ echo 0 > smi_gyro/gyr_bw
+  $ echo 2 > in_anglvel_filter_low_pass_3db_frequency
    
-.. note:: 0 = gyr_odr/2, 1 = gyr_odr/4
+.. note:: 2 = gyr_odr/2, 4 = gyr_odr/4
 
 .. _operation_mode:
 
-4.5 Set operation mode
------------------------
+4.5 Operation mode
+------------------
 
 The driver supports different operation modes:
 
 - Polling
 - New data
-- FIFO (watermark and full)
+- FIFO
 
-To set the operation mode call menuconfig as described in `build_smi330`_ and build the driver.
-For all modes except "New data", the data interrupt must be mapped to INT1 or INT2. 
+If no data interrupt is mapped, only polling mode is available. 
+If a data interrupt is mapped the default operation mode is "New data". 
+To change to "FIFO" mode, set a buffer watermark > 0 (see below).
 
 Polling:
 ^^^^^^^^
@@ -533,7 +553,7 @@ In "New data" mode an interrupt is triggered every time a new sample is availabl
 
 FIFO:
 ^^^^^
-In "FIFO" mode an interrupt is triggered when the watermark level is reached or when the HW FIFO is full, depending on the configuration. 
+In "FIFO" mode an interrupt is triggered when the watermark level is reached. 
 The HW FIFO data is then copied to the IIO buffer. The HW FIFO overwrites oldest data on buffer full condition.
 
 The HW FIFO has a size of 2048 bytes.
@@ -542,10 +562,10 @@ Order and size of sources to the HW FIFO (timestamp is calculated by the driver,
 +-------+---------------------+--------------+---------------------------------------------------+
 | Order | Source              | Size [words] | Description                                       |
 +=======+=====================+==============+===================================================+
-| 1     | Accelerometer       | 3            | Acceleration with one 16bit word for each axis x, |
+| 1     | Accelerometer       | 3 * 1        | Acceleration with one 16bit word for each axis x, |
 |       |                     |              | y and z                                           |
 +-------+---------------------+--------------+---------------------------------------------------+
-| 2     | Gyroscope           | 3            | Angular rate with one 16bit word for each axis x, |
+| 2     | Gyroscope           | 3 * 1        | Angular rate with one 16bit word for each axis x, |
 |       |                     |              | y and z                                           |
 +-------+---------------------+--------------+---------------------------------------------------+
 | 3     | Temperature sensor  | 1            | Temperature as one 16bit word                     |
@@ -553,20 +573,36 @@ Order and size of sources to the HW FIFO (timestamp is calculated by the driver,
 
 The HW FIFO fill level and the HW FIFO watermark level are specified in word size according to the table above.
 
-Get HW FIFO fill level
+Get HW FIFO watermark level (word size, see table above)
+
+::
+
+  $ cat buffer0/hwfifo_watermark
+
+Get HW FIFO fill level (word size, see table above)
 
 ::
 
   $ cat buffer0/hwfifo_fill_level
 
-Set HW FIFO watermark level
+Set IIO buffer length (the length is independent of the activated channels, each entry in the buffer contains the data of the activated channels)
 
 ::
 
-  $ echo 256 > buffer0/hwfifo_watermark
-   
-.. note:: Valid range: 1 ... 1023 (word size, see table above)
+  $ echo 256 > buffer0/length
 
+.. note:: In FIFO mode, the length of the IIO buffer should be large enough to hold all entries in the HW FIFO to prevent data loss 
+          (e.g. if all channels are activated and the HW FIFO watermark is set to 42, the IIO buffer length should be at least 6 (= 42 / (3 + 3 + 1))).
+
+
+To set the HW FIFO watermark level, the watermark of the IIO buffer needs to be set (number of entries)
+
+::
+
+  $ echo 64 > buffer0/watermark
+
+.. note:: The IIO buffer watermark level has to be <= IIO buffer length
+.. note:: The HW FIFO watermark level is the IIO buffer watermark level multiplied by the word size of the activated channels.
 
 4.6 Read data from IIO buffer
 ------------------------------
@@ -587,7 +623,7 @@ Execute the program:
 
 ::
 
-  $ sudo ./iio_generic_buffer -n SMI330 -a -g -l 256 -c -1
+  $ sudo ./iio_generic_buffer -n smi330 -a -g -l 256 -c -1
   iio device number being used is 0
   trigger-less mode selected
   Enabling all channels
@@ -620,27 +656,22 @@ Instead of auto-activate all channels, we can de-/activate the channels manually
 
 ::
 
-  $ echo 0 > buffer0/in_anglvel_x&y&z_en
-  $ echo 1 > buffer0/in_accel_x&y&z_en
+  $ echo 0 > buffer0/in_anglvel_x_en
+  $ echo 0 > buffer0/in_anglvel_y_en
+  $ echo 0 > buffer0/in_anglvel_z_en
+  $ echo 1 > buffer0/in_accel_x_en
+  $ echo 1 > buffer0/in_accel_y_en
+  $ echo 1 > buffer0/in_accel_z_en
   $ echo 1 > buffer0/in_timestamp_en
   $ echo 0 > buffer0/in_temp_object_en
-
-Set IIO buffer length (the length is independent of the activated channels, each entry in the buffer contains the data of the activated channels)
-
-::
-
-  $ echo 256 > buffer0/length
-
-.. note:: In FIFO mode, the length of the IIO buffer should be large enough to hold all entries in the HW FIFO to prevent data loss 
-          (e.g. if all channels are activated and the HW FIFO watermark is set to 42, the IIO buffer length should be at least 6 (= 42 / (3 + 3 + 1))).
 
 
 5. SMI330 Advanced Features
 ============================
 
-To use the advanced Features the advanced feature engine must be enabled by calling menuconfig as described in `build_smi330`_.
+To use the advanced features the advanced feature engine must be enabled by calling menuconfig as described in `build_smi330`_.
 
-Some of the advanced Features uses IIO event to signal the user space application that some sensor event happened (e.g. sampling value over threshold).
+Some of the advanced features uses IIO event to signal the user space application that some sensor event happened (e.g. sampling value over threshold).
 To read the event from user space, the Linux kernel provides a C program under tools/iio.
 And we need to firstly compile and upload it to the target board.
 
@@ -663,28 +694,30 @@ The parameter hysteresis controls the sensitivity of the interrupt to be rethrow
 It ensures that the slope must exceed the threshold by a certain margin (hysteresis value) before the interrupt is triggered again. 
 This helps prevent false triggers due to small fluctuations in the slope.
 
-.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type **"roc"** and direction **"rising"**
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced features. Therefore we have to map our feature event to the existed IIO event type. We map anymotion event to IIO event type **"roc"** and direction **"rising"**
 
 anymotion configuration is able to be found under
 
 ::
 
   /sys/bus/iio/devices/iio:deviceX/events
-  ├── 'in_accel_x&y&z_roc_rising_en'                    // enable/disable any motion x&y&z-axis
+  ├── in_accel_x_roc_rising_en                          // enable/disable any motion x-axis
+  ├── in_accel_y_roc_rising_en                          // enable/disable any motion y-axis
+  ├── in_accel_z_roc_rising_en                          // enable/disable any motion z-axis
   ├── roc_rising_hysteresis                             // configure any motion hysteresis
   ├── roc_rising_period                                 // configure any motion duration
   ├── roc_rising_timeout                                // configure any motion wait_time
   └── roc_rising_value                                  // configure any motion threshold
 
-enable any motion x&y&z-axis with default configuration
+enable any motion x-axis with default configuration
 
 ::
 
   $ sudo su
-  $ echo 4 > /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
-  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&y\&z_roc_rising_en
-  $ ./iio_event_monitor SMI330
-  Found IIO device with name SMI330 with device number 0
+  $ echo 4 > /sys/bus/iio/devices/iio\:device0/in_accel_en
+  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x_roc_rising_en
+  $ ./iio_event_monitor smi330
+  Found IIO device with name smi330 with device number 0
 
 We will see the anymotion events as following if moving the sensor
 
@@ -710,14 +743,16 @@ The parameter hysteresis controls the sensitivity of the interrupt to be rethrow
 It ensures that the slope must exceed the threshold by a certain margin (hysteresis value) before the interrupt is triggered again. 
 This helps prevent false triggers due to small fluctuations in the slope.
 
-.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"roc"** and direction **"falling"**
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"roc"** and direction **"falling"**
 
 nomotion configuration is able to be found under
 
 ::
 
   /sys/bus/iio/devices/iio:deviceX/events
-  ├── 'in_accel_x&y&z_roc_falling_en'                    // enable/disable no motion x&y&z-axis
+  ├── in_accel_x_roc_falling_en                          // enable/disable no motion x-axis
+  ├── in_accel_y_roc_falling_en                          // enable/disable no motion y-axis
+  ├── in_accel_z_roc_falling_en                          // enable/disable no motion z-axis
   ├── roc_falling_hysteresis                             // configure no motion hysteresis
   ├── roc_falling_period                                 // configure no motion duration
   ├── roc_falling_timeout                                // configure no motion wait_time
@@ -728,14 +763,14 @@ enable no motion x-axis with default configuration
 ::
 
   $ sudo su
-  $ echo 4 > /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
-  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&y\&z_roc_falling_en
-  $ ./iio_event_monitor SMI330
-  Found IIO device with name SMI330 with device number 0
-  Event: time: 1667845513396539597, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
-  Event: time: 1667845513416250976, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
-  Event: time: 1667845513435964698, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
-  Event: time: 1667845513455680347, type: accel(x&y&z), channel: 0, evtype: roc, direction: falling
+  $ echo 4 > /sys/bus/iio/devices/iio\:device0/in_accel_en
+  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x_roc_falling_en
+  $ ./iio_event_monitor smi330
+  Found IIO device with name smi330 with device number 0
+  Event: time: 1667845513396539597, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
+  Event: time: 1667845513416250976, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
+  Event: time: 1667845513435964698, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
+  Event: time: 1667845513455680347, type: accel(x|y|z), channel: 0, evtype: roc, direction: falling
 
 
 5.3 Tilt detection
@@ -750,12 +785,12 @@ A tilt interrupt is reported when the attitude angle of the device changes by a 
 By adjusting the value of `segment_size`, you can control the length of the time interval over which the estimation is performed.
 The parameter `beta_acc_mean` is used to configure the lowpass filtering for the continuous estimation of the gravity acceleration vector. 
 
-.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced Features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"change"** and direction **"either"**
+.. note:: Currently the event type defined by the Linux IIO is not able to cover our advanced features. Therefore we have to map our feature event to the existed IIO event type. We map nomotion event to IIO event type **"change"** and direction **"either"**
 
 ::
 
   /sys/bus/iio/devices/iio:deviceX/events
-  ├── 'in_accel_x&y&z_change_either_en'                  // enable/disable no motion x&y&z-axis
+  ├── in_accel_change_either_en                          // enable/disable tilt detection
   ├── change_either_low_pass_filter_3db                  // configure tilt low pass filter
   ├── change_either_period                               // configure tilt duration
   └── change_either_value                                // configure tilt minimum tilt angle
@@ -765,19 +800,19 @@ enable tilt detection with default configuration
 ::
 
    $ sudo su
-   $ echo 4 > /sys/bus/iio/devices/iio\:device0/smi_acc/acc_mode
-   $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_x\&y\&z_change_either_en
-   $ ./iio_event_monitor SMI330
-   Found IIO device with name SMI330 with device number 0
+   $ echo 4 > /sys/bus/iio/devices/iio\:device0/in_accel_en
+   $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/in_accel_change_either_en
+   $ ./iio_event_monitor smi330
+   Found IIO device with name smi330 with device number 0
   
 tilt the sensor to see the following events
 
 ::
 
-  Event: time: 1703449136664221930, type: accel(x&y&z), channel: 0, evtype: change, direction: either
-  Event: time: 1703449140245313491, type: accel(x&y&z), channel: 0, evtype: change, direction: either
-  Event: time: 1703449143001386615, type: accel(x&y&z), channel: 0, evtype: change, direction: either
-  Event: time: 1703449145516049322, type: accel(x&y&z), channel: 0, evtype: change, direction: either
+  Event: time: 1703449136664221930, type: accel(x|y|z), channel: 0, evtype: change, direction: either
+  Event: time: 1703449140245313491, type: accel(x|y|z), channel: 0, evtype: change, direction: either
+  Event: time: 1703449143001386615, type: accel(x|y|z), channel: 0, evtype: change, direction: either
+  Event: time: 1703449145516049322, type: accel(x|y|z), channel: 0, evtype: change, direction: either
 
 
 5.4 Gyroscope self calibration
@@ -796,7 +831,8 @@ restore the configuration after the self calibration has been performed.
 
 ::
 
-  $ cat smi_adv/self_cal
+  $ sudo su
+  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/self_cal
 
   
 5.5 Auto-Operation mode change
@@ -813,7 +849,7 @@ Accelerometer change enable of Auto-Operation mode is done by
 ::
 
   $ sudo su
-  $ echo 0 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+  $ echo 0 > /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 
 
 Gyroscope change enable of Auto-Operation mode is done by
@@ -821,21 +857,21 @@ Gyroscope change enable of Auto-Operation mode is done by
 ::
 
   $ sudo su
-  $ echo 1 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+  $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 
 Accelerometer and gyroscope change enable of Auto-Operation mode is done by
 
 ::
 
   $ sudo su
-  $ echo 2 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+  $ echo 2 > /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 
 Disabling of Auto-Operation mode is done by
 
 ::
 
   $ sudo su
-  $ echo 3 > /sys/bus/iio/devices/iio\:device0/auto_op/control_auto_op_mode
+  $ echo 3 > /sys/bus/iio/devices/iio\:device0/events/control_auto_op_mode
 
 .. note:: Disabling the Auto-Operation mode will also reset the advanced features switching conditions and the manual switch from alternative to user configuration
 
@@ -846,7 +882,7 @@ Auto-Operation mode conditions can be configured by
 ::
 
  $ sudo su
- $ echo x > /sys/bus/iio/devices/iio\:device0/auto_op/set_auto_op_mode_cond
+ $ echo x > /sys/bus/iio/devices/iio\:device0/events/set_auto_op_mode_cond
 
   Possible values for x are 
   ├── 0							// Change to User settings by A_NO_MOTION
@@ -861,7 +897,7 @@ The configurations of the sensors can be instantly reset to the user configurati
 ::
 
  $ sudo su
- $ echo 1 > /sys/bus/iio/devices/iio\:device0/auto_op/config_user_overwrite
+ $ echo 1 > /sys/bus/iio/devices/iio\:device0/events/config_user_overwrite
 
 Set alternative configuration:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -870,7 +906,7 @@ Set alternative output data rate (for accelerometer and gyroscope)
 ::
 
   $ sudo su
-  $ echo 100 > smi_adv/alt_odr
+  $ echo 100 > /sys/bus/iio/devices/iio\:device0/events/alt_odr
    
 .. note:: 0 = 0.78125 Hz, 1 = 1.5625 Hz, 3 = 3.125 Hz, 6 = 6.25 Hz, 12 = 12.5 Hz, 25 = 25 Hz, 50 = 50 Hz, 100 = 100 Hz, 200 = 200 Hz, 400 = 400 Hz, 800 = 800 Hz, 1600 = 1600 Hz, 3200 = 3200 Hz, 6400 = 6400 Hz
 
@@ -879,7 +915,7 @@ Set alternative accelerometer power mode
 ::
 
   $ sudo su
-  $ echo 4 > smi_adv/alt_acc_mode
+  $ echo 4 > /sys/bus/iio/devices/iio\:device0/events/alt_acc_mode
 
 .. note:: 0 = Suspend, 3 = Low power, 4 = Normal, 7 = Performance
 
@@ -888,7 +924,7 @@ Set alternative gyroscope power mode
 ::
 
   $ sudo su
-  $ echo 4 > smi_adv/alt_gyr_mode
+  $ echo 4 > /sys/bus/iio/devices/iio\:device0/events/alt_gyr_mode
 
 .. note:: 0 = Suspend, 3 = Low power, 4 = Normal, 7 = Performance
 
@@ -897,7 +933,7 @@ Set alternative accelerometer averaging
 ::
 
   $ sudo su
-  $ echo 8 > smi_adv/alt_acc_avg_num
+  $ echo 8 > /sys/bus/iio/devices/iio\:device0/events/alt_acc_avg_num
    
 .. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64
 
@@ -906,6 +942,6 @@ Set alternative gyroscope averaging
 ::
 
   $ sudo su
-  $ echo 8 > smi_adv/alt_gyr_avg_num
+  $ echo 8 > /sys/bus/iio/devices/iio\:device0/events/alt_gyr_avg_num
    
 .. note:: Possible averaging values: 1, 2, 4, 8, 16, 32, 64

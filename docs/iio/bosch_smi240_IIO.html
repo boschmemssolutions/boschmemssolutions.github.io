@@ -65,14 +65,9 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#work-with-smi240-linux-driver">4. Work with SMI240 Linux driver</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#preparation">4.1 Preparation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#read-sensor-temperature">4.2 Read sensor temperature</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#read-accelerometer-value">4.3 Read accelerometer value</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#read-gyroscope-current-value">4.4 Read gyroscope current value</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-synchronized-accelerometer-gyroscope-and-temperature-value">4.5 Get synchronized accelerometer, gyroscope and temperature value</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#signal-filtering">4.6 Signal filtering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#self-test">4.7 Self Test</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#soft-reset">4.8 Soft reset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#sign-of-channels">4.9 Sign of channels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-data-from-sensor">4.2 Read data from sensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#change-sensor-settings">4.3 Change sensor settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-synchronized-data-from-iio-buffer">4.4 Read synchronized data from IIO buffer</a></li>
 </ul>
 </li>
 </ul>
@@ -209,11 +204,12 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
 </section>
 <section id="software-setup">
 <h2>3. Software Setup<a class="headerlink" href="#software-setup" title="Link to this heading"></a></h2>
+<p>This example is based on a Raspberry Pi 3. If you are using a different host board, the steps are slightly different.</p>
 <section id="required-software">
 <h3>3.1 Required Software<a class="headerlink" href="#required-software" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
-<li><p>Host Board Linux (kernel version 5.15)</p></li>
-<li><p>SMI240 IIO Linux driver   <a class="reference external" href="https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO">https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO</a></p></li>
+<li><p>Raspberry Pi 3 as host board (tested Linux kernel versions 6.1.21 and 6.6)</p></li>
+<li><p>SMI240 IIO Linux driver <a class="reference external" href="https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO">https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO</a></p></li>
 <li><p>Linux development environment (native or as VM)</p></li>
 </ol>
 <div class="admonition hint">
@@ -222,7 +218,7 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 20.04.1 LTS</p>
+<p>We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 22.04.5 LTS</p>
 </div>
 <ul class="simple">
 <li><p>Install Toolchain and dependences</p></li>
@@ -234,7 +230,10 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
 <ul class="simple">
 <li><p>Clone Linux kernel</p></li>
 </ul>
-<p>We use kernel v5.15.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">depth</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">branch</span> <span class="o">&lt;</span><span class="n">branch_name</span><span class="o">&gt;</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">raspberrypi</span><span class="o">/</span><span class="n">linux</span>
+</pre></div>
+</div>
+<p>We use kernel v6.6, replace &lt;branch_name&gt; with “rpi-6.6.y”</p>
 <ul class="simple">
 <li><p>Clone SMI240 IIO Linux driver</p></li>
 </ul>
@@ -305,7 +304,7 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
                         <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
 
                         <span class="n">smi240</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
-                                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;BOSCH,SMI240&quot;</span><span class="p">;</span>
+                                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi240&quot;</span><span class="p">;</span>
                                 <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">10000000</span><span class="o">&gt;</span><span class="p">;</span>
                                 <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
                         <span class="p">};</span>
@@ -347,7 +346,6 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
       <span class="o">&lt;*&gt;</span><span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">support</span>  <span class="o">---&gt;</span>
               <span class="n">Inertial</span> <span class="n">measurement</span> <span class="n">units</span>  <span class="o">---&gt;</span>
                       <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI240</span> <span class="n">Inertial</span> <span class="n">Measurement</span> <span class="n">Unit</span>
-                      <span class="p">(</span><span class="mi">1024</span><span class="p">)</span> <span class="n">configue</span> <span class="n">read</span> <span class="n">buffer</span> <span class="n">size</span> <span class="p">(</span><span class="n">NEW</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -363,14 +361,14 @@ The SMI240 is a combined three axis angular rate and three axis acceleration sen
 <ul class="simple">
 <li><p>Install the kernel with SMI240 Linux driver in SD card</p></li>
 </ul>
-<p>insert the SD card (created in 2.3). A “boot” partition and a “rootfs” partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that</p>
+<p>insert the SD card (created in 2.3). A “bootfs” partition and a “rootfs” partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that</p>
 <blockquote>
-<div><p>/media/username/boot</p>
+<div><p>/media/username/bootfs</p>
 <p>/media/username/rootfs</p>
 </div></blockquote>
 <p>write the kernel with SMI240 Linux driver in SD card</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export KERNEL=kernel7
-export SD_BOOT_PATH=/media/username/boot
+export SD_BOOT_PATH=/media/username/bootfs
 export SD_ROOTFS_PATH=/media/username/rootfs
 sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
 sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
@@ -383,7 +381,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <ul class="simple">
 <li><p>adapt the boot configuraion</p></li>
 </ul>
-<p>open the “config.txt” in “boot” partition, and add the following entries</p>
+<p>open the “config.txt” in “bootfs” partition, and add the following entries</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment some or all of these to enable the optional hardware interfaces</span>
 <span class="n">dtparam</span><span class="o">=</span><span class="n">spi</span><span class="o">=</span><span class="n">on</span>
 <span class="n">dtoverlay</span><span class="o">=</span><span class="n">smi240</span><span class="o">-</span><span class="n">spi</span><span class="p">,</span><span class="n">smi240</span>
@@ -397,13 +395,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <h2>4. Work with SMI240 Linux driver<a class="headerlink" href="#work-with-smi240-linux-driver" title="Link to this heading"></a></h2>
 <section id="preparation">
 <h3>4.1 Preparation<a class="headerlink" href="#preparation" title="Link to this heading"></a></h3>
-<p>Power on the board. We firstly check if the driver was initialized properly</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmesg</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">SMI240</span>
-<span class="p">[</span>   <span class="mf">68.592919</span><span class="p">]</span> <span class="n">SMI240</span> <span class="n">Chip</span> <span class="n">ID</span><span class="p">:</span> <span class="mh">0x0024</span>
-<span class="p">[</span>   <span class="mf">68.593345</span><span class="p">]</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">Device</span> <span class="n">SMI240</span> <span class="n">initialized</span>
-</pre></div>
-</div>
-<p>If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor</p>
+<p>Power on the board. If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folders, which we can use to read/write data from/to the sensor</p>
 <blockquote>
 <div><p>/sys/bus/iio/devices/iio:device0</p>
 </div></blockquote>
@@ -413,7 +405,7 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span>
 <span class="n">cat</span> <span class="n">name</span>
-<span class="n">SMI240</span>
+<span class="n">smi240</span>
 </pre></div>
 </div>
 <p>Work with driver using command line</p>
@@ -425,140 +417,127 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 </pre></div>
 </div>
 </section>
-<section id="read-sensor-temperature">
-<h3>4.2 Read sensor temperature<a class="headerlink" href="#read-sensor-temperature" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_temp_object_raw</span>
-<span class="mi">19</span>
+<section id="read-data-from-sensor">
+<h3>4.2 Read data from sensor<a class="headerlink" href="#read-data-from-sensor" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat in_accel_x_raw
+37
+$ cat in_accel_y_raw
+4
+$ cat in_accel_z_raw
+2030
+$ cat in_anglvel_x_raw
+-16
+$ cat in_anglvel_y_raw
+33
+$ cat in_anglvel_z_raw
+35
+$ cat in_temp_object_raw
+610
 </pre></div>
 </div>
-</section>
-<section id="read-accelerometer-value">
-<h3>4.3 Read accelerometer value<a class="headerlink" href="#read-accelerometer-value" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_accel_x</span>\<span class="o">&amp;</span><span class="n">y</span>\<span class="o">&amp;</span><span class="n">z_raw</span>
-<span class="mi">19</span> <span class="o">-</span><span class="mi">12</span> <span class="mi">1997</span>
-<span class="p">[</span><span class="n">x</span>  <span class="n">y</span>   <span class="n">z</span><span class="p">]</span>
+<p>To convert raw data to physical values, we can read scale and offset values</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat in_accel_scale
+0.000500
+$ cat in_anglvel_scale
+0.010000
+$ cat in_temp_object_scale
+0.003906250
+$ cat in_temp_object_offset
+6400
 </pre></div>
 </div>
-</section>
-<section id="read-gyroscope-current-value">
-<h3>4.4 Read gyroscope current value<a class="headerlink" href="#read-gyroscope-current-value" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_anglvel_x</span>\<span class="o">&amp;</span><span class="n">y</span>\<span class="o">&amp;</span><span class="n">z_raw</span>
-<span class="o">-</span><span class="mi">24</span> <span class="mi">21</span> <span class="o">-</span><span class="mi">15</span>
-<span class="p">[</span><span class="n">x</span>  <span class="n">y</span>   <span class="n">z</span><span class="p">]</span>
-</pre></div>
+<div class="line-block">
+<div class="line">Accel[g]     = accel_raw * accel_scale</div>
+<div class="line">Anglvel[°/s] = anglvel_raw * anglvel_scale</div>
+<div class="line">T[°C]        = (temp_raw + temp_offset) * temp_scale</div>
 </div>
 </section>
-<section id="get-synchronized-accelerometer-gyroscope-and-temperature-value">
-<h3>4.5 Get synchronized accelerometer, gyroscope and temperature value<a class="headerlink" href="#get-synchronized-accelerometer-gyroscope-and-temperature-value" title="Link to this heading"></a></h3>
+<section id="change-sensor-settings">
+<h3>4.3 Change sensor settings<a class="headerlink" href="#change-sensor-settings" title="Link to this heading"></a></h3>
+<p>Set the -3dB cut-off frequency for the accelerometer</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 50 &gt; in_accel_filter_low_pass_3db_frequency
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>50 = 50 hz, 400 = 400 Hz</p>
+</div>
+<p>Set the -3dB cut-off frequency for the gyroscope</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 50 &gt; in_anglvel_filter_low_pass_3db_frequency
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>50 = 50 hz, 400 = 400 Hz</p>
+</div>
+</section>
+<section id="read-synchronized-data-from-iio-buffer">
+<h3>4.4 Read synchronized data from IIO buffer<a class="headerlink" href="#read-synchronized-data-from-iio-buffer" title="Link to this heading"></a></h3>
+<p>The driver uses IIO buffer to push the synchronized sensor data to the user space application.
+To read the data from user space, the Linux kernel provides a C program under tools/iio.
+We need to compile and upload it to the target board first.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd tools
+$ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iio
+$ scp tools/iio/iio_generic_buffer to your board
+</pre></div>
+</div>
+<p>We also need to create a trigger (e.g. sysfs trigger):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0 &gt; /sys/devices/iio_sysfs_trigger/add_trigger
+</pre></div>
+</div>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>Synchronisation of sensor data is done by trigger and capture mechanism. Sensor measurement data and channel status of all channels (LF and HF) on one chip select line can be captured (stored sensor internally) at one point in time and read out at a later point in time</p>
+<p>Maybe you need to modprobe iio-trig-sysfs</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_temp_accel_anglvel_capture</span>
-<span class="mi">19</span> <span class="mi">38</span> <span class="o">-</span><span class="mi">14</span> <span class="mi">2029</span> <span class="o">-</span><span class="mi">4</span> <span class="o">-</span><span class="mi">17</span> <span class="o">-</span><span class="mi">3</span>
-<span class="p">[</span><span class="n">temp</span> <span class="n">accX</span> <span class="n">accY</span> <span class="n">accZ</span> <span class="n">gyroX</span> <span class="n">gyroY</span> <span class="n">gyroZ</span><span class="p">]</span>
+<p>In one terminal we can trigger events:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 1 &gt; /sys/bus/iio/devices/trigger0/trigger_now
 </pre></div>
 </div>
-<p>This triggers the data capture and read the synchronized accelerometer, gyroscope and temperature value from sensor</p>
-</section>
-<section id="signal-filtering">
-<h3>4.6 Signal filtering<a class="headerlink" href="#signal-filtering" title="Link to this heading"></a></h3>
-<p>The SMI240 offers two filters (400Hz and 50Hz) which are configurable by the user</p>
-<p>check available ACC filter option</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_accel_filter_low_pass_3db_frequency_available</span>
-<span class="mi">50</span> <span class="mi">400</span>
+<p>In another terminal we can execute the iio_generic_buffer program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ./iio_generic_buffer -n smi240 -a -l 256 -c -1 -T 0
+iio device number being used is 0
+iio trigger number being used is 0
+Enabling all channels
+Enabling: in_accel_y_en
+Enabling: in_temp_object_en
+Enabling: in_anglvel_z_en
+Enabling: in_accel_x_en
+Enabling: in_timestamp_en
+Enabling: in_anglvel_y_en
+Enabling: in_accel_z_en
+Enabling: in_anglvel_x_en
+/sys/bus/iio/devices/iio:device0 sysfstrig0
+27.453125 0.022000 0.001500 1.012000 -0.240000 0.330000 0.130000 1723918279362596240
+27.480469 0.027500 0.003500 1.013500 0.060000 0.530000 0.140000 1723918280416508114
+27.503906 0.020000 0.004000 1.015000 0.210000 0.610000 0.090000 1723918283157345249
+27.476562 0.023000 0.002000 1.017500 -0.120000 0.090000 -0.100000 1723918283626415613
+27.453125 0.021000 0.002500 1.014000 -0.080000 0.670000 0.250000 1723918284054354467
+27.464844 0.020000 0.001500 1.013000 0.400000 0.500000 0.190000 1723918284499537905
+27.492188 0.022000 0.002500 1.014500 -0.110000 0.400000 0.080000 1723918284874394675
+^CCaught signal 2
+Disabling: in_accel_y_en
+Disabling: in_temp_object_en
+Disabling: in_anglvel_z_en
+Disabling: in_accel_x_en
+Disabling: in_timestamp_en
+Disabling: in_anglvel_y_en
+Disabling: in_accel_z_en
+Disabling: in_anglvel_x_en
 </pre></div>
 </div>
-<p>check available GYR filter option</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_anglvel_filter_low_pass_3db_frequency_available</span>
-<span class="mi">50</span> <span class="mi">400</span>
-</pre></div>
-</div>
-<p>check current ACC filter option</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_accel_filter_low_pass_3db_frequency</span>
-<span class="mi">400</span>
-</pre></div>
-</div>
-<p>Make sure that you have root access. if not using “sudo su”</p>
-<p>set ACC filter</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="mi">50</span> <span class="o">&gt;</span> <span class="n">in_accel_filter_low_pass_3db_frequency</span>
-<span class="n">cat</span> <span class="n">in_accel_filter_low_pass_3db_frequency</span>
-<span class="mi">50</span>
-</pre></div>
-</div>
-<p>check current GYR filter option</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_anglvel_filter_low_pass_3db_frequency</span>
-<span class="mi">400</span>
-</pre></div>
-</div>
-<p>set GYR filter</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="mi">50</span> <span class="o">&gt;</span> <span class="n">in_anglvel_filter_low_pass_3db_frequency</span>
-<span class="n">cat</span> <span class="n">in_anglvel_filter_low_pass_3db_frequency</span>
-<span class="mi">50</span>
-</pre></div>
-</div>
-</section>
-<section id="self-test">
-<h3>4.7 Self Test<a class="headerlink" href="#self-test" title="Link to this heading"></a></h3>
-<p>The sensor module provides an electro-mechanical self-test (BITE) which is bidirectional, deflecting the sensing element in positive and negative measurement direction. The BITE tests verifies the functionality of the MEMS elements and ASIC signal path. User can define BITE repetitions between 1 and 8.</p>
-<p>check current BITE repetitions</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">bite_repetitions</span>
-<span class="mi">3</span>
-</pre></div>
-</div>
-<p>set BITE repetitions</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="mi">8</span> <span class="o">&gt;</span> <span class="n">bite_repetitions</span>
-<span class="n">cat</span> <span class="n">bite_repetitions</span>
-<span class="mi">8</span>
-</pre></div>
-</div>
-<p>start self test</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">self_test</span>
-<span class="bp">self</span> <span class="n">test</span> <span class="n">success</span><span class="o">.</span>
-</pre></div>
-</div>
-</section>
-<section id="soft-reset">
-<h3>4.8 Soft reset<a class="headerlink" href="#soft-reset" title="Link to this heading"></a></h3>
-<p>trigger soft reset</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">soft_reset</span>
-<span class="n">soft</span> <span class="n">reset</span> <span class="n">performed</span><span class="o">.</span>
-</pre></div>
-</div>
-</section>
-<section id="sign-of-channels">
-<h3>4.9 Sign of channels<a class="headerlink" href="#sign-of-channels" title="Link to this heading"></a></h3>
-<p>User is able to invert the sign of each ACC/GYR channel.</p>
-<p>check current sign of channels</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">sign_of_channels</span>
-<span class="n">ax</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">ay</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">az</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gx</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gy</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gz</span><span class="p">:</span><span class="mi">0</span>
-</pre></div>
-</div>
-<p>“ax:0” -&gt; sign of accel x axis is normal (not inverted)</p>
-<p>invert sign of one singel channel</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="n">ay</span><span class="p">:</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="n">sign_of_channels</span>
-<span class="n">cat</span> <span class="n">sign_of_channels</span>
-<span class="n">ax</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">ay</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="n">az</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gx</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gy</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gz</span><span class="p">:</span><span class="mi">0</span>
-</pre></div>
-</div>
-<p>“echo ay:1” -&gt; invert sign of accel y axis</p>
-<p>clear the sign inversion for one singel channel</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="n">ay</span><span class="p">:</span><span class="mi">0</span> <span class="o">&gt;</span> <span class="n">sign_of_channels</span>
-<span class="n">cat</span> <span class="n">sign_of_channels</span>
-<span class="n">ax</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">ay</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">az</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gx</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gy</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gz</span><span class="p">:</span><span class="mi">0</span>
-</pre></div>
-</div>
-<p>“echo ay:0” -&gt; clear sign inversion of accel y axis</p>
-<p>invert sign of several channels (up to 6) at once</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="n">az</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="n">gx</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="n">gy</span><span class="p">:</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="n">sign_of_channels</span>
-<span class="n">cat</span> <span class="n">sign_of_channels</span>
-<span class="n">ax</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">ay</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">az</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="n">gx</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="n">gy</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="n">gz</span><span class="p">:</span><span class="mi">0</span>
-</pre></div>
-</div>
-<p>clear the sign inversion of several channels (up to 6) at once</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="n">ax</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">ay</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">az</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gx</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gy</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gz</span><span class="p">:</span><span class="mi">0</span> <span class="o">&gt;</span> <span class="n">sign_of_channels</span>
-<span class="n">cat</span> <span class="n">sign_of_channels</span>
-<span class="n">ax</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">ay</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">az</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gx</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gy</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="n">gz</span><span class="p">:</span><span class="mi">0</span>
+<p>The first value represents the temperature in °C.
+The next three values are x, y and z of the accelerometer in g.
+The next three values are x, y and z of the gyroscope in °/s.
+The last value is the timestamp in ns.</p>
+<p>Instead of auto-activate all channels, we can de-/activate the channels manually</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo 0 &gt; buffer0/in_anglvel_x_en
+$ echo 0 &gt; buffer0/in_anglvel_y_en
+$ echo 0 &gt; buffer0/in_anglvel_z_en
+$ echo 1 &gt; buffer0/in_accel_x_en
+$ echo 1 &gt; buffer0/in_accel_y_en
+$ echo 1 &gt; buffer0/in_accel_z_en
+$ echo 1 &gt; buffer0/in_timestamp_en
+$ echo 0 &gt; buffer0/in_temp_object_en
 </pre></div>
 </div>
 </section>

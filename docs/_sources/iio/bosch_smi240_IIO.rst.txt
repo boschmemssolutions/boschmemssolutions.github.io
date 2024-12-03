@@ -88,18 +88,20 @@ SMI240 Shuttle Pin	Function
 3. Software Setup
 ====================
 
+This example is based on a Raspberry Pi 3. If you are using a different host board, the steps are slightly different.
+
 
 3.1 Required Software
 ----------------------
 
-#. Host Board Linux (kernel version 5.15) 
-#. SMI240 IIO Linux driver   https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO
+#. Raspberry Pi 3 as host board (tested Linux kernel versions 6.1.21 and 6.6) 
+#. SMI240 IIO Linux driver https://github.com/boschmemssolutions/SMI240-Linux-Driver-IIO
 #. Linux development environment (native or as VM) 
 
 .. hint:: Most board manufacturer provides customized Linux distribution for their boards. Consult with your board manufacturer. And download the Linux distribution for your board, if available.
 
 
-.. note:: We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 20.04.1 LTS
+.. note:: We do not recommend to build the driver with Linux kernel directly on host board. This takes too long. Build it on PC is much faster. Since the toolchain is Linux based, a Linux environment is required. We use Ubuntu 22.04.5 LTS
 
 - Install Toolchain and dependences  
 
@@ -111,8 +113,11 @@ SMI240 Shuttle Pin	Function
   
 - Clone Linux kernel 
 
+::
 
-We use kernel v5.15.
+  git clone --depth=1 --branch <branch_name> https://github.com/raspberrypi/linux
+
+We use kernel v6.6, replace <branch_name> with "rpi-6.6.y"
 
 - Clone SMI240 IIO Linux driver
 
@@ -192,7 +197,7 @@ Create a devicetree overlay file "smi240-spi-overlay.dts" with the following con
 				status = "okay";
 				
 				smi240@0 {
-					compatible = "BOSCH,SMI240";
+					compatible = "bosch,smi240";
 					spi-max-frequency = <10000000>;
 					reg = <0>;
 				};
@@ -237,7 +242,6 @@ Activate the options as following
 	<*>Industrial I/O support  --->		
 		Inertial measurement units  --->
 			<*> Bosch Sensor SMI240 Inertial Measurement Unit
-			(1024) configue read buffer size (NEW)
 		
 	
 - Build SMI240 Linux driver	
@@ -251,9 +255,9 @@ Activate the options as following
 
 - Install the kernel with SMI240 Linux driver in SD card
 
-insert the SD card (created in 2.3). A "boot" partition and a "rootfs" partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that
+insert the SD card (created in 2.3). A "bootfs" partition and a "rootfs" partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that
 
-  /media/username/boot
+  /media/username/bootfs
   
   /media/username/rootfs
 
@@ -262,7 +266,7 @@ write the kernel with SMI240 Linux driver in SD card
 ::
 
   export KERNEL=kernel7
-  export SD_BOOT_PATH=/media/username/boot
+  export SD_BOOT_PATH=/media/username/bootfs
   export SD_ROOTFS_PATH=/media/username/rootfs
   sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
   sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
@@ -273,7 +277,7 @@ write the kernel with SMI240 Linux driver in SD card
 
 - adapt the boot configuraion
 
-open the "config.txt" in "boot" partition, and add the following entries 
+open the "config.txt" in "bootfs" partition, and add the following entries 
 
 ::
 	
@@ -289,16 +293,7 @@ Take the SD card out and put it back in board.
 4.1 Preparation
 --------------------------------
 
-Power on the board. We firstly check if the driver was initialized properly
-
-::
-
-	dmesg | grep SMI240
-	[   68.592919] SMI240 Chip ID: 0x0024
-	[   68.593345] Bosch Sensor Device SMI240 initialized
-   
-   
-If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor
+Power on the board. If the driver was installed properly, a folder will be created. A number of devicefiles are created in the folders, which we can use to read/write data from/to the sensor
 
 
    /sys/bus/iio/devices/iio:device0
@@ -309,7 +304,7 @@ If the driver was installed properly, a folder will be created. A number of devi
 
 	cd /sys/bus/iio/devices/iio:device0
 	cat name
-	SMI240
+	smi240
 	
 
 Work with driver using command line
@@ -320,187 +315,138 @@ Work with driver using command line
 
    sudo su
 
-	
-4.2 Read sensor temperature
-----------------------------
+4.2 Read data from sensor
+--------------------------
 
 ::
 
-	cat in_temp_object_raw
-	19
-
-4.3 Read accelerometer value 
------------------------------
-
-::
-
-	cat in_accel_x\&y\&z_raw
-	19 -12 1997
-	[x  y   z]
+  $ cat in_accel_x_raw 
+  37
+  $ cat in_accel_y_raw 
+  4
+  $ cat in_accel_z_raw 
+  2030
+  $ cat in_anglvel_x_raw
+  -16
+  $ cat in_anglvel_y_raw
+  33
+  $ cat in_anglvel_z_raw
+  35
+  $ cat in_temp_object_raw
+  610
   
-4.4 Read gyroscope current value
----------------------------------
+To convert raw data to physical values, we can read scale and offset values
 
 ::
 
-	cat in_anglvel_x\&y\&z_raw
-	-24 21 -15
-	[x  y   z]
+  $ cat in_accel_scale
+  0.000500
+  $ cat in_anglvel_scale
+  0.010000
+  $ cat in_temp_object_scale
+  0.003906250
+  $ cat in_temp_object_offset
+  6400
 
-4.5 Get synchronized accelerometer, gyroscope and temperature value
----------------------------------------------------------------------
+| Accel[g]     = accel_raw * accel_scale
+| Anglvel[°/s] = anglvel_raw * anglvel_scale
+| T[°C]        = (temp_raw + temp_offset) * temp_scale
 
-.. hint:: Synchronisation of sensor data is done by trigger and capture mechanism. Sensor measurement data and channel status of all channels (LF and HF) on one chip select line can be captured (stored sensor internally) at one point in time and read out at a later point in time
+4.3 Change sensor settings
+---------------------------
 
-::
-
-	cat in_temp_accel_anglvel_capture
-	19 38 -14 2029 -4 -17 -3
-	[temp accX accY accZ gyroX gyroY gyroZ]
-
-This triggers the data capture and read the synchronized accelerometer, gyroscope and temperature value from sensor
-
-4.6 Signal filtering
----------------------
-
-The SMI240 offers two filters (400Hz and 50Hz) which are configurable by the user
-
-check available ACC filter option
+Set the -3dB cut-off frequency for the accelerometer
 
 ::
 
-   cat in_accel_filter_low_pass_3db_frequency_available
-   50 400
+  $ echo 50 > in_accel_filter_low_pass_3db_frequency
    
-check available GYR filter option 
+.. note:: 50 = 50 hz, 400 = 400 Hz
+
+Set the -3dB cut-off frequency for the gyroscope
 
 ::
 
-   cat in_anglvel_filter_low_pass_3db_frequency_available
-   50 400
-
-check current ACC filter option
-
-::
-
-   cat in_accel_filter_low_pass_3db_frequency
-   400
-
-Make sure that you have root access. if not using "sudo su"
+  $ echo 50 > in_anglvel_filter_low_pass_3db_frequency
    
-set ACC filter
+.. note:: 50 = 50 hz, 400 = 400 Hz
+
+
+4.4 Read synchronized data from IIO buffer
+-------------------------------------------
+
+The driver uses IIO buffer to push the synchronized sensor data to the user space application.
+To read the data from user space, the Linux kernel provides a C program under tools/iio.
+We need to compile and upload it to the target board first.
 
 ::
 
-   echo 50 > in_accel_filter_low_pass_3db_frequency
-   cat in_accel_filter_low_pass_3db_frequency
-   50
-   
-check current GYR filter option
+  $ cd tools
+  $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iio
+  $ scp tools/iio/iio_generic_buffer to your board
+
+We also need to create a trigger (e.g. sysfs trigger):
 
 ::
 
-   cat in_anglvel_filter_low_pass_3db_frequency
-   400
-   
-set GYR filter
+  $ echo 0 > /sys/devices/iio_sysfs_trigger/add_trigger
+
+.. hint:: Maybe you need to modprobe iio-trig-sysfs
+
+In one terminal we can trigger events:
 
 ::
 
-   echo 50 > in_anglvel_filter_low_pass_3db_frequency
-   cat in_anglvel_filter_low_pass_3db_frequency
-   50
-   
-4.7 Self Test
---------------
+  $ echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
 
-The sensor module provides an electro-mechanical self-test (BITE) which is bidirectional, deflecting the sensing element in positive and negative measurement direction. The BITE tests verifies the functionality of the MEMS elements and ASIC signal path. User can define BITE repetitions between 1 and 8.
-
-check current BITE repetitions
+In another terminal we can execute the iio_generic_buffer program:
 
 ::
 
-   cat bite_repetitions
-   3
+  $ sudo ./iio_generic_buffer -n smi240 -a -l 256 -c -1 -T 0
+  iio device number being used is 0
+  iio trigger number being used is 0
+  Enabling all channels
+  Enabling: in_accel_y_en
+  Enabling: in_temp_object_en
+  Enabling: in_anglvel_z_en
+  Enabling: in_accel_x_en
+  Enabling: in_timestamp_en
+  Enabling: in_anglvel_y_en
+  Enabling: in_accel_z_en
+  Enabling: in_anglvel_x_en
+  /sys/bus/iio/devices/iio:device0 sysfstrig0
+  27.453125 0.022000 0.001500 1.012000 -0.240000 0.330000 0.130000 1723918279362596240
+  27.480469 0.027500 0.003500 1.013500 0.060000 0.530000 0.140000 1723918280416508114
+  27.503906 0.020000 0.004000 1.015000 0.210000 0.610000 0.090000 1723918283157345249
+  27.476562 0.023000 0.002000 1.017500 -0.120000 0.090000 -0.100000 1723918283626415613
+  27.453125 0.021000 0.002500 1.014000 -0.080000 0.670000 0.250000 1723918284054354467
+  27.464844 0.020000 0.001500 1.013000 0.400000 0.500000 0.190000 1723918284499537905
+  27.492188 0.022000 0.002500 1.014500 -0.110000 0.400000 0.080000 1723918284874394675
+  ^CCaught signal 2
+  Disabling: in_accel_y_en
+  Disabling: in_temp_object_en
+  Disabling: in_anglvel_z_en
+  Disabling: in_accel_x_en
+  Disabling: in_timestamp_en
+  Disabling: in_anglvel_y_en
+  Disabling: in_accel_z_en
+  Disabling: in_anglvel_x_en  
 
-set BITE repetitions
+The first value represents the temperature in °C.
+The next three values are x, y and z of the accelerometer in g.
+The next three values are x, y and z of the gyroscope in °/s.
+The last value is the timestamp in ns.
 
-::
-
-   echo 8 > bite_repetitions
-   cat bite_repetitions
-   8
-   
-start self test
-
-::
-
-   cat self_test
-   self test success.
-   
-4.8 Soft reset
----------------
-
-trigger soft reset
-
-::
-
-   cat soft_reset
-   soft reset performed.
-
-
-4.9 Sign of channels
-----------------------
-
-User is able to invert the sign of each ACC/GYR channel.
-
-check current sign of channels
-
-::
-
-   cat sign_of_channels
-   ax:0,ay:0,az:0,gx:0,gy:0,gz:0
-	
-"ax:0" -> sign of accel x axis is normal (not inverted)
-
-invert sign of one singel channel
+Instead of auto-activate all channels, we can de-/activate the channels manually
 
 ::
 
-   echo ay:1 > sign_of_channels
-   cat sign_of_channels
-   ax:0,ay:1,az:0,gx:0,gy:0,gz:0
-
-"echo ay:1" -> invert sign of accel y axis
-
-
-clear the sign inversion for one singel channel
-
-::
-
-   echo ay:0 > sign_of_channels
-   cat sign_of_channels
-   ax:0,ay:0,az:0,gx:0,gy:0,gz:0
-   
-"echo ay:0" -> clear sign inversion of accel y axis
-
-
-invert sign of several channels (up to 6) at once
-
-::
-
-   echo az:1,gx:1,gy:1 > sign_of_channels
-   cat sign_of_channels
-   ax:0,ay:0,az:1,gx:1,gy:1,gz:0
-   
-   
-clear the sign inversion of several channels (up to 6) at once
-
-::
-
-   echo ax:0,ay:0,az:0,gx:0,gy:0,gz:0 > sign_of_channels
-   cat sign_of_channels
-   ax:0,ay:0,az:0,gx:0,gy:0,gz:0
-   
-   
-   
+  $ echo 0 > buffer0/in_anglvel_x_en
+  $ echo 0 > buffer0/in_anglvel_y_en
+  $ echo 0 > buffer0/in_anglvel_z_en
+  $ echo 1 > buffer0/in_accel_x_en
+  $ echo 1 > buffer0/in_accel_y_en
+  $ echo 1 > buffer0/in_accel_z_en
+  $ echo 1 > buffer0/in_timestamp_en
+  $ echo 0 > buffer0/in_temp_object_en
