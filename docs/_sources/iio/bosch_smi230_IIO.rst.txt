@@ -86,7 +86,7 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
   
 - Clone Linux kernel 
 
-We use kernel v5.15.
+We use kernel v6.6.
 
 - Clone SMI230 IIO Linux driver
 
@@ -107,280 +107,115 @@ Integrate Linux driver into Linux kernel
 
 ::
 
-  cp SMI230-Linux-Driver-IIO/drivers/iio/accel/*.c linux/drivers/iio/accel
-  cp SMI230-Linux-Driver-IIO/drivers/iio/accel/*.h linux/drivers/iio/accel
-  cp SMI230-Linux-Driver-IIO/drivers/iio/gyro/*.c linux/drivers/iio/gyro
-  cp SMI230-Linux-Driver-IIO/drivers/iio/gyro/*.h linux/drivers/iio/gyro
+  cp -r SMI230-Linux-Driver-IIO/drivers/iio/imu/smi230 linux/drivers/iio/imu
+  
 
-- Add entry in accel Kconfig
+- Add entry in imu Kconfig
 
-Open linux/drivers/iio/accel/Kconfig and add the SMI230 entry at bottom
+Open linux/drivers/iio/imu/Kconfig and add the SMI230 entry at bottom
 
 .. code-block:: kconfig
 
-	config IIO_SMI230_ACC
-		tristate "Bosch Sensor SMI230 Accelerometer"
-		depends on (I2C || SPI_MASTER)
-		select IIO_BUFFER
-		select IIO_TRIGGERED_BUFFER
-		help
-		  Build driver for Bosch SMI230 tri-axis accelerometer sensor.
+	source "drivers/iio/imu/inv_icm42600/Kconfig"
+	source "drivers/iio/imu/inv_mpu6050/Kconfig"
+	source "drivers/iio/imu/smi230/Kconfig"
+	source "drivers/iio/imu/st_lsm6dsx/Kconfig"
+	source "drivers/iio/imu/st_lsm9ds0/Kconfig"
 
-	choice
-		prompt "Select communication interface"
-		depends on IIO_SMI230_ACC
-		help
-		  Note: SPI and I2C are not supported at the same time, that is to say:
-		  Choose either SPI or I2C to build the driver.
 
-	    config IIO_SMI230_ACC_SPI
-			bool "Enable SPI connection"
-			depends on SPI_MASTER
-
-	    config IIO_SMI230_ACC_I2C
-			bool "Enable I2C connection"
-			depends on I2C
-	endchoice
-
-	choice
-		prompt "Select ACC interrupt source"
-		depends on IIO_SMI230_ACC
-		default IIO_SMI230_ACC_INT2
-
-	    config IIO_SMI230_ACC_INT1
-			bool "use int1 as source"
-			help
-		 	  This enables INT1 as source for ACC
-
-	    config IIO_SMI230_ACC_INT2
-			bool "use int2 as source"
-			help
-		 	  This enables INT2 as source for ACC
-	endchoice
-
-	choice
-		prompt "Select ACC interrupt behaviour"
-		depends on IIO_SMI230_ACC
-		default IIO_SMI230_ACC_PUSH_PULL
 	
-		config IIO_SMI230_ACC_PUSH_PULL
-			bool "push-pull mode"
-			help
-			  Use push-pull mode for interrupt pin.
-		  
-		config IIO_SMI230_ACC_OPEN_DRAIN
-			bool "open-drain mode"
-			help
-			  Use open-drain mode for interrupt pin. Pull-up resistor needed!
-	endchoice
-
-	choice
-		prompt "Select ACC interrupt level"
-		depends on IIO_SMI230_ACC
-		default IIO_SMI230_ACC_ACTIVE_HIGH
+- Add entry in imu Makefile	
 	
-		config IIO_SMI230_ACC_ACTIVE_LOW
-			bool "active low"
-			help
-			  Interrupt signal is active low or falling edge.
-		  
-		config IIO_SMI230_ACC_ACTIVE_HIGH
-			bool "active high"
-			help
-			  Interrupt signal is active high or rising edge.
-	endchoice
-
-	config IIO_SMI230_ACC_FIFO
-		bool "SMI230 ACC FIFO enable"
-		depends on IIO_SMI230_ACC
-		help
-		 enable ACC FIFO feature.
-
-	choice
-		prompt "Select ACC FIFO interrupt type"
-		depends on IIO_SMI230_ACC && IIO_SMI230_ACC_FIFO
-
-	    config IIO_SMI230_ACC_FIFO_WM
-			bool "use watermark threshold to generate interrupt"
-
-	    config IIO_SMI230_ACC_FIFO_FULL
-			bool "generate interrupt when FIFO is full"
-	endchoice
-
-	config IIO_SMI230_ACC_MAX_BUFFER_LEN
-		depends on IIO_SMI230_ACC
-		int "configue read buffer size"
-		default "1024"
-		help
-		  Considering using FIFO, 1024 bytes are big enough for most cases. Do not change this value if not sure.
-
-- Add entry in gyro Kconfig
-
-Open linux/drivers/iio/gyro/Kconfig and add the SMI230 entry at bottom
-
-.. code-block:: kconfig
-	
-	config SMI230_GYRO
-		tristate "BOSCH SMI230 Gyro Sensor"
-		depends on (I2C || SPI_MASTER)
-		select IIO_BUFFER
-		select IIO_TRIGGERED_BUFFER
-		help
-		  Say yes here to build support for BOSCH SMI230GYRO Tri-axis Gyro Sensor
-		  driver connected via I2C or SPI.
-
-	choice
-	        prompt "Select communication interface"
-	        depends on SMI230_GYRO
-	        help
-	          Note: SPI and I2C are not supported at the same time, that is to say:
-	          Choose either SPI or I2C to build the driver.
-
-	    config SMI230_GYRO_SPI
- 	       bool "Enable SPI connection"
- 	       depends on SPI_MASTER
-	    config SMI230_GYRO_I2C
-	        bool "Enable I2C connection"
-	        depends on I2C
-	endchoice
-
-	choice
-	        prompt "Select working mode"
-	        depends on SMI230_GYRO
-
-	    config SMI230_GYRO_NEW_DATA
-	        bool "New data"
-	        help
-			interrupt comes once new data is available
-	    config SMI230_GYRO_FIFO
- 	       bool "FIFO"
-	        help
-			interrupt comes once data reaches certain FIFO watermark or FIFO full
-	endchoice
-
-	choice
-		prompt "Select GYRO interrupt source"
-		depends on (!SMI230_DATA_SYNC) && SMI230_GYRO
-		default SMI230_GYRO_INT4
-
-	    config SMI230_GYRO_INT3
-		bool "use int3 as source"
-
-	    config SMI230_GYRO_INT4
-		bool "use int4 as source"
-	endchoice
-
-	choice
-		prompt "Select GYRO interrupt edge"
-		depends on (!SMI230_DATA_SYNC) && SMI230_GYRO
-		default SMI230_GYRO_INT_ACTIVE_HIGH
-
-	    config SMI230_GYRO_INT_ACTIVE_HIGH
-		bool "interrupt is on raising edge"
-
-	    config SMI230_GYRO_INT_ACTIVE_LOW
-		bool "interrupt is on falling edge"
-
-	endchoice
-
-	config SMI230_MAX_BUFFER_LEN
-	        int "configue read buffer size"
-	        default "1024"
-	        help
-	          Considering using FIFO, 1024 bytes are big enough for most cases. Do not change this value if not sure.	
-	
-- Add entry in accel Makefile	
-	
-Open linux/drivers/iio/accel/Makefile and add the SMI230 entry at bottom	
+Open linux/drivers/iio/imu/Makefile and add the SMI230 entry at bottom	
 	
 .. code-block:: makefile
 
-	obj-$(CONFIG_IIO_SMI230_ACC) += smi230_acc.o
-	smi230_acc-objs := smi230_acc_core.o
-
-	ifeq ($(CONFIG_IIO_SMI230_ACC_I2C),y)
-		smi230_acc-objs += smi230_acc_i2c.o
-	else
-		smi230_acc-objs += smi230_acc_spi.o
-	endif	
+	obj-y += smi230/
+	obj-y += st_lsm6dsx/
+	obj-y += st_lsm9ds0/
 	
-- Add entry in gyro Makefile	
-	
-Open linux/drivers/iio/gyro/Makefile and add the SMI230 entry at bottom	
 
-.. code-block:: makefile
-
-	obj-$(CONFIG_SMI230_GYRO) += smi230_gyro.o
-	smi230_gyro-objs := smi230_gyro_core.o
-	ifeq ($(CONFIG_SMI230_GYRO_I2C),y)
-		smi230_gyro-objs += smi230_gyro_i2c.o
-	else        
-		smi230_gyro-objs += smi230_gyro_spi.o
-	endif
-
-- Change devicetree overlay	
+- Extend devicetree 	
 	
-Open linux/arch/arm/boot/dts/overlays/spi-rtc-overlay.dts and change the content as following
-	
+extend the device tree with the sensor entries. This part is very HW specific. Please consult your HW vendor, how to do it properly for your HW.
+
+I2C example	
 ::
 
-	/dts-v1/;
-	/plugin/;
+	fragment@0 {
+		target = <&i2c_arm>;
+		__dormant__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
 
-	/ {
-		compatible = "brcm,bcm2835";
-
-		fragment@0 {
-			target = <&spidev0>;
-			__dormant__ {
-				status = "disabled";
-			};
-		};
-	
-		fragment@1 {
-			target = <&spidev1>;
-			__dormant__ {
-				status = "disabled";
-			};
-		};
-	
-		fragment@2 {
-			target = <&spi0>;
-			__dormant__ {
-				#address-cells = <1>;
-				#size-cells = <0>;
+			smi230acc: smi230acc@18 {
+				compatible = "bosch,smi230acc";
+				reg = <0x18>;
+				interrupt-parent = <&gpio>;
+				interrupts = <26 1>; /*IRQ_TYPE_EDGE_RISING*/ 
+				interrupt-names = "ACC_INT";
 				status = "okay";
-			
-				smi230acc@0 {
-					compatible = "BOSCH,SMI230ACC";
-					spi-max-frequency = <8000000>;
-					reg = <0>;
-					gpio_irq = <&gpio 26 0>;
-				};
 			};
 		};
+	};
 	
-		fragment@3 {
-			target = <&spi0>;
-			__dormant__ {
-				#address-cells = <1>;
-				#size-cells = <0>;
+	fragment@1 {
+		target = <&i2c_arm>;
+		__dormant__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+ 
+			smi230gyro: smi230gyro@68 {
+				compatible = "bosch,smi230gyro";
+				reg = <0x68>;
+				interrupt-parent = <&gpio>;
+				interrupts = <20 1>; /*IRQ_TYPE_EDGE_RISING*/
+				interrupt-names = "GYRO_INT";
 				status = "okay";
-			
-				smi230gyro@1 {
-					compatible = "BOSCH,SMI230GYRO";
-					spi-max-frequency = <8000000>;
-					reg = <1>;
-					gpio_irq = <&gpio 20 0>;
-				};
 			};
 		};
+	};
+	
+SPI example
+::
 
-		__overrides__ {
-			smi230acc = <0>, "=0=2";
-			smi230gyro = <0>, "=1=3";
-		};
-	};  
+	fragment@2 {
+        target = <&spi0>;
+        __dormant__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            status = "okay";
+
+            smi230acc@0 {
+                compatible = "bosch,smi230acc";
+                spi-max-frequency = <10000000>;
+                reg = <0>;
+                interrupt-parent = <&gpio>;
+                interrupts = <26 1>; /*IRQ_TYPE_EDGE_RISING*/
+                interrupt-names = "ACC_INT";
+            };
+        };
+    };
+
+    fragment@3 {
+        target = <&spi0>;
+        __dormant__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            status = "okay";
+
+            smi230gyro@1 {
+                compatible = "bosch,smi230gyro";
+                spi-max-frequency = <10000000>;
+                reg = <1>;
+                interrupt-parent = <&gpio>;
+                interrupts = <20 1>; /*IRQ_TYPE_EDGE_RISING*/
+                interrupt-names = "GYRO_INT";
+            };
+        };
+    };
 
 Build SMI230 Linux driver with the kernel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -405,13 +240,16 @@ Activate the option as following
 		
 		-*-     Industrial I/O triggered buffer support
 		
-		Accelerometers  --->
-			<*> Bosch Sensor SMI230 Accelerometer
-		
-		Digital gyroscope sensors  --->
-			<*> BOSCH SMI230 Gyro Sensor
-		
-	
+		Inertial measurement units  --->
+			<*> Bosch Sensor SMI230 Inertial Measurement Unit
+			Select communication interface (Enable I2C connection)  --->
+			Select interrupt operation mode (Enable fifo-wm interrupt)  --->
+			Select ACC interrupt ouput pin (use int2 as interrupt ouput)  --->
+			Select GYRO interrupt ouput pin (use int4 as source)  --->
+			Interrupt Features (deactivate interrupt features)  --->
+
+
+
 - Build SMI230 Linux driver	
 
 ::
@@ -423,9 +261,9 @@ Activate the option as following
 
 - Install the kernel with SMI230 Linux driver in SD card
 
-insert the SD card (created in 2.3). A "boot" partition and a "rootfs" partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that
+insert the SD card (created in 2.3). A "bootfs" partition and a "rootfs" partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that
 
-  /media/username/boot
+  /media/username/bootfs
   
   /media/username/rootfs
 
@@ -434,25 +272,34 @@ write the kernel with SMI230 Linux driver in SD card
 ::
 
   export KERNEL=kernel7
-  export SD_BOOT_PATH=/media/username/boot
+  export SD_BOOT_PATH=/media/username/bootfs
   export SD_ROOTFS_PATH=/media/username/rootfs
   sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
   sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
-  sudo cp arch/arm/boot/zImage $SD_BOOT_PATH/$KERNEL.img
-  sudo cp arch/arm/boot/dts/*.dtb $SD_BOOT_PATH
-  sudo cp arch/arm/boot/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
-  sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
+  sudo cp arch/arm/bootfs/zImage $SD_BOOT_PATH/$KERNEL.img
+  sudo cp arch/arm/bootfs/dts/*.dtb $SD_BOOT_PATH
+  sudo cp arch/arm/bootfs/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
+  sudo cp arch/arm/bootfs/dts/overlays/README $SD_BOOT_PATH/overlays/
 
 - adapt the boot configuraion
 
 open the "config.txt" in "boot" partition, and add the following entries 
 
+SPI
 ::
 	
 	# Uncomment some or all of these to enable the optional hardware interfaces
 	dtparam=spi=on
-	dtoverlay=spi-rtc,smi230acc
-	dtoverlay=spi-rtc,smi230gyro
+	dtoverlay=smi230-spi,smi230acc
+	dtoverlay=smi230-spi,smi230gyro
+	
+I2C
+::
+	
+	# Uncomment some or all of these to enable the optional hardware interfaces
+	dtparam=i2c_arm=on,i2c_arm_baudrate=400000
+	dtoverlay=smi230-i2c,smi230acc
+	dtoverlay=smi230-i2c,smi230gyro	
 
 Take the SD card out and put it back in board.
 
@@ -465,15 +312,10 @@ Power on the board. We firstly check if the driver was initialized properly
 
 ::
 
-   dmesg | grep SMI230
-   [    8.473601] SMI230GYRO spi0.1: Bosch Sensor SMI230GYRO hardware initialized
-   [    8.487473] SMI230GYRO spi0.1: Bosch Sensor SMI230GYRO device alloced
-   [    8.487783] SMI230GYRO spi0.1: Bosch Sensor SMI230GYRO trigger registered
-   [    8.487822] SMI230GYRO spi0.1: Bosch Sensor SMI230GYRO trigger buffer registered
-   [    8.487880] SMI230GYRO spi0.1: gpio pin 20
-   [    8.488083] SMI230GYRO spi0.1: irq number 201
-   [    8.488205] SMI230GYRO spi0.1: Bosch Sensor SMI230GYRO irq alloced
-   [    8.492520] Bosch Sensor Device SMI230ACC initialized
+   dmesg | grep smi230
+   [   52.312908] smi230: loading out-of-tree module taints kernel.
+   [   53.632399] smi230acc_i2c 1-0018: Write config file OK
+   [   53.746229] Acc and Gyro I2C driver registered successfully
    
    
 If the driver was installed properly, 2 folders will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor
@@ -487,10 +329,10 @@ If the driver was installed properly, 2 folders will be created. A number of dev
 
 ::
 
-	cd /sys/bus/iio/devices/iio:device1
+	cd /sys/bus/iio/devices/iio:device0
 	sudo su
 	cat name
-	SMI230ACC
+	smi230acc
 	
 
 - Work with driver using command line 
@@ -501,42 +343,45 @@ Check sensor type
 
 ::
 
-	cd /sys/bus/iio/devices/iio:device1
+	cd /sys/bus/iio/devices/iio:device0
 	sudo su
 	cat name
-	SMI230ACC
+	smi230acc
 	
 check power mode and activate if it is suspended.
 
 ::
 
-   cat power_mode
+   cat /sys/bus/iio/devices/iio:device0/pwr
    suspend
-   echo normal > power_mode
-   cat power_mode
+   echo normal > /sys/bus/iio/devices/iio:device0/pwr
+   cat /sys/bus/iio/devices/iio:device0/pwr
    normal
 
 Read data from sensor. 
 
 ::
 
-  cat in_accel_raw
-  7797892 78 -94 8160
-  cat in_accel_range
-  4
-  cat in_accel_sampling_frequency
-  100.000000
+  cat /sys/bus/iio/devices/iio:device0/in_accel_z_raw
+  7980
+  
+  cat /sys/bus/iio/devices/iio:device0/range
+  4g
+  
+  cat /sys/bus/iio/devices/iio:device0/odr
+  100Hz
   
 Change sensor setting
 
 ::
 
-   echo 200 > in_accel_sampling_frequency
-   cat in_accel_sampling_frequency
-   200.000000
-   echo 8 > in_accel_range
-   cat in_accel_range
-   8
+   echo 200Hz > /sys/bus/iio/devices/iio:device0/odr
+   cat /sys/bus/iio/devices/iio:device0/odr
+   100Hz
+   
+   echo 8g > /sys/bus/iio/devices/iio:device0/range
+   cat /sys/bus/iio/devices/iio:device0/range
+   8g
    
 - Using driver in C code
 
@@ -562,34 +407,41 @@ Upload iio_generic_buffer in board and execute it
   
 ::
 
-  sudo ./iio_generic_buffer -N 1 -c -1 -a
-  iio device number being used is 1
-  iio trigger number being used is 1
+  root@raspberrypi:/home/she2rt# ./iio_generic_buffer -n smi230acc -c -1 -a 
+  iio device number being used is 0
+  iio trigger number being used is 0
   Enabling all channels
   Enabling: in_accel_y_en
+  Enabling: in_temp_object_en
   Enabling: in_accel_x_en
   Enabling: in_timestamp_en
   Enabling: in_accel_z_en
-  /sys/bus/iio/devices/iio:device1 SMI230ACC-trigger
-  28.000000 -118.000000 8154.000000 1665428973532193471
-  41.000000 -102.000000 8181.000000 1665428973542061576
-  83.000000 -88.000000 8152.000000 1665428973551912910
-  92.000000 -80.000000 8165.000000 1665428973561775285
-  87.000000 -90.000000 8173.000000 1665428973571636306
-  101.000000 -93.000000 8162.000000 1665428973581498994
-  104.000000 -95.000000 8152.000000 1665428973591361369
-  89.000000 -106.000000 8163.000000 1665428973601222963
-  57.000000 -97.000000 8164.000000 1665428973611084557
-  [accX accY accZ time_ns]
+  /sys/bus/iio/devices/iio:device0 smi230acc-trigger
+  87.000000 5.000000 8033.000000 26500.000000 1734559005920419779 
+  87.000000 3.000000 8026.000000 26500.000000 1734559005930259755 
+  86.000000 13.000000 8020.000000 26500.000000 1734559005940125825 
+  89.000000 -4.000000 8027.000000 26500.000000 1734559005950007363 
+  91.000000 -19.000000 8032.000000 26500.000000 1734559005959873902 
+  98.000000 -5.000000 8019.000000 26500.000000 1734559005969743305 
+  101.000000 0.000000 8030.000000 26500.000000 1734559005979612760 
+  100.000000 -15.000000 8029.000000 26500.000000 1734559005989482215 
+  112.000000 -18.000000 8020.000000 26500.000000 1734559005999359795 
+  108.000000 -8.000000 8033.000000 26500.000000 1734559006009226023 
+  105.000000 16.000000 8016.000000 26500.000000 1734559006019096317 
+  91.000000 6.000000 8020.000000 26500.000000 1734559006029000986 
+  76.000000 -10.000000 8038.000000 26500.000000 1734559006038880030 
+  82.000000 -13.000000 8025.000000 26500.000000 1734559006048745064 
+  80.000000 7.000000 8017.000000 26500.000000 1734559006058626088 
+  [accX accY accZ temperature time_ns]
 
-.. hint:: Check the device number of SMI230ACC by reading "name" from devicefolder
+.. hint:: Check the device number of smi230acc by reading "name" from devicefolder
 
 ::
 
-	cd /sys/bus/iio/devices/iio:device1
+	cd /sys/bus/iio/devices/iio:device0
 	sudo su
 	cat name
-	SMI230ACC  
+	smi230acc 
 
 5. SMI230 Firmware Features
 =================================

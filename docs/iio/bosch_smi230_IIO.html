@@ -187,7 +187,7 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 <ul class="simple">
 <li><p>Clone Linux kernel</p></li>
 </ul>
-<p>We use kernel v5.15.</p>
+<p>We use kernel v6.6.</p>
 <ul class="simple">
 <li><p>Clone SMI230 IIO Linux driver</p></li>
 </ul>
@@ -202,274 +202,106 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 <ul class="simple">
 <li><p>Copy source code into Linux kernel</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="n">SMI230</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">Driver</span><span class="o">-</span><span class="n">IIO</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">accel</span><span class="o">/*.</span><span class="n">c</span> <span class="n">linux</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">accel</span>
-<span class="n">cp</span> <span class="n">SMI230</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">Driver</span><span class="o">-</span><span class="n">IIO</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">accel</span><span class="o">/*.</span><span class="n">h</span> <span class="n">linux</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">accel</span>
-<span class="n">cp</span> <span class="n">SMI230</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">Driver</span><span class="o">-</span><span class="n">IIO</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">gyro</span><span class="o">/*.</span><span class="n">c</span> <span class="n">linux</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">gyro</span>
-<span class="n">cp</span> <span class="n">SMI230</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">Driver</span><span class="o">-</span><span class="n">IIO</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">gyro</span><span class="o">/*.</span><span class="n">h</span> <span class="n">linux</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">gyro</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">-</span><span class="n">r</span> <span class="n">SMI230</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">Driver</span><span class="o">-</span><span class="n">IIO</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">imu</span><span class="o">/</span><span class="n">smi230</span> <span class="n">linux</span><span class="o">/</span><span class="n">drivers</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">imu</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Add entry in accel Kconfig</p></li>
+<li><p>Add entry in imu Kconfig</p></li>
 </ul>
-<p>Open linux/drivers/iio/accel/Kconfig and add the SMI230 entry at bottom</p>
-<div class="highlight-kconfig notranslate"><div class="highlight"><pre><span></span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC
-<span class="w">        </span><span class="nb">tristate</span><span class="w"> </span><span class="s2">&quot;Bosch Sensor SMI230 Accelerometer&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span><span class="p">(</span>I2C<span class="w"> </span><span class="o">||</span><span class="w"> </span>SPI_MASTER)
-<span class="w">        </span><span class="k">select</span><span class="w"> </span>IIO_BUFFER
-<span class="w">        </span><span class="k">select</span><span class="w"> </span>IIO_TRIGGERED_BUFFER
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">          Build driver for Bosch SMI230 tri-axis accelerometer sensor.</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select communication interface&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>IIO_SMI230_ACC
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">          Note: SPI and I2C are not supported at the same time, that is to say:</span>
-<span class="sd">          Choose either SPI or I2C to build the driver.</span>
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_SPI
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;Enable SPI connection&quot;</span>
-<span class="w">                </span><span class="k">depends on</span><span class="w"> </span>SPI_MASTER
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_I2C
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;Enable I2C connection&quot;</span>
-<span class="w">                </span><span class="k">depends on</span><span class="w"> </span>I2C
-<span class="k">endchoice</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select ACC interrupt source&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>IIO_SMI230_ACC
-<span class="w">        </span><span class="k">default</span><span class="w"> </span>IIO_SMI230_ACC_INT2
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_INT1
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;use int1 as source&quot;</span>
-<span class="w">                </span><span class="k">help</span>
-<span class="sd">                  This enables INT1 as source for ACC</span>
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_INT2
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;use int2 as source&quot;</span>
-<span class="w">                </span><span class="k">help</span>
-<span class="sd">                  This enables INT2 as source for ACC</span>
-<span class="k">endchoice</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select ACC interrupt behaviour&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>IIO_SMI230_ACC
-<span class="w">        </span><span class="k">default</span><span class="w"> </span>IIO_SMI230_ACC_PUSH_PULL
-
-<span class="w">        </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_PUSH_PULL
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;push-pull mode&quot;</span>
-<span class="w">                </span><span class="k">help</span>
-<span class="sd">                  Use push-pull mode for interrupt pin.</span>
-
-<span class="w">        </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_OPEN_DRAIN
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;open-drain mode&quot;</span>
-<span class="w">                </span><span class="k">help</span>
-<span class="sd">                  Use open-drain mode for interrupt pin. Pull-up resistor needed!</span>
-<span class="k">endchoice</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select ACC interrupt level&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>IIO_SMI230_ACC
-<span class="w">        </span><span class="k">default</span><span class="w"> </span>IIO_SMI230_ACC_ACTIVE_HIGH
-
-<span class="w">        </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_ACTIVE_LOW
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;active low&quot;</span>
-<span class="w">                </span><span class="k">help</span>
-<span class="sd">                  Interrupt signal is active low or falling edge.</span>
-
-<span class="w">        </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_ACTIVE_HIGH
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;active high&quot;</span>
-<span class="w">                </span><span class="k">help</span>
-<span class="sd">                  Interrupt signal is active high or rising edge.</span>
-<span class="k">endchoice</span>
-
-<span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_FIFO
-<span class="w">        </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;SMI230 ACC FIFO enable&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>IIO_SMI230_ACC
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">         enable ACC FIFO feature.</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select ACC FIFO interrupt type&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>IIO_SMI230_ACC<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>IIO_SMI230_ACC_FIFO
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_FIFO_WM
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;use watermark threshold to generate interrupt&quot;</span>
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_FIFO_FULL
-<span class="w">                </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;generate interrupt when FIFO is full&quot;</span>
-<span class="k">endchoice</span>
-
-<span class="k">config</span><span class="w"> </span>IIO_SMI230_ACC_MAX_BUFFER_LEN
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>IIO_SMI230_ACC
-<span class="w">        </span><span class="nb">int</span><span class="w"> </span><span class="s2">&quot;configue read buffer size&quot;</span>
-<span class="w">        </span><span class="k">default</span><span class="w"> </span><span class="s2">&quot;1024&quot;</span>
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">          Considering using FIFO, 1024 bytes are big enough for most cases. Do not change this value if not sure.</span>
+<p>Open linux/drivers/iio/imu/Kconfig and add the SMI230 entry at bottom</p>
+<div class="highlight-kconfig notranslate"><div class="highlight"><pre><span></span><span class="k">source</span><span class="w"> </span><span class="s2">&quot;drivers/iio/imu/inv_icm42600/Kconfig&quot;</span>
+<span class="k">source</span><span class="w"> </span><span class="s2">&quot;drivers/iio/imu/inv_mpu6050/Kconfig&quot;</span>
+<span class="k">source</span><span class="w"> </span><span class="s2">&quot;drivers/iio/imu/smi230/Kconfig&quot;</span>
+<span class="k">source</span><span class="w"> </span><span class="s2">&quot;drivers/iio/imu/st_lsm6dsx/Kconfig&quot;</span>
+<span class="k">source</span><span class="w"> </span><span class="s2">&quot;drivers/iio/imu/st_lsm9ds0/Kconfig&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Add entry in gyro Kconfig</p></li>
+<li><p>Add entry in imu Makefile</p></li>
 </ul>
-<p>Open linux/drivers/iio/gyro/Kconfig and add the SMI230 entry at bottom</p>
-<div class="highlight-kconfig notranslate"><div class="highlight"><pre><span></span><span class="k">config</span><span class="w"> </span>SMI230_GYRO
-<span class="w">        </span><span class="nb">tristate</span><span class="w"> </span><span class="s2">&quot;BOSCH SMI230 Gyro Sensor&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span><span class="p">(</span>I2C<span class="w"> </span><span class="o">||</span><span class="w"> </span>SPI_MASTER)
-<span class="w">        </span><span class="k">select</span><span class="w"> </span>IIO_BUFFER
-<span class="w">        </span><span class="k">select</span><span class="w"> </span>IIO_TRIGGERED_BUFFER
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">          Say yes here to build support for BOSCH SMI230GYRO Tri-axis Gyro Sensor</span>
-<span class="sd">          driver connected via I2C or SPI.</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select communication interface&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>SMI230_GYRO
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">          Note: SPI and I2C are not supported at the same time, that is to say:</span>
-<span class="sd">          Choose either SPI or I2C to build the driver.</span>
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_SPI
-<span class="w">       </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;Enable SPI connection&quot;</span>
-<span class="w">       </span><span class="k">depends on</span><span class="w"> </span>SPI_MASTER
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_I2C
-<span class="w">        </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;Enable I2C connection&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>I2C
-<span class="k">endchoice</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select working mode&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span>SMI230_GYRO
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_NEW_DATA
-<span class="w">        </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;New data&quot;</span>
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">                interrupt comes once new data is available</span>
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_FIFO
-<span class="w">       </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;FIFO&quot;</span>
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">                interrupt comes once data reaches certain FIFO watermark or FIFO full</span>
-<span class="k">endchoice</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select GYRO interrupt source&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span><span class="p">(</span><span class="o">!</span>SMI230_DATA_SYNC)<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>SMI230_GYRO
-<span class="w">        </span><span class="k">default</span><span class="w"> </span>SMI230_GYRO_INT4
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_INT3
-<span class="w">        </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;use int3 as source&quot;</span>
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_INT4
-<span class="w">        </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;use int4 as source&quot;</span>
-<span class="k">endchoice</span>
-
-<span class="k">choice</span>
-<span class="w">        </span><span class="k">prompt</span><span class="w"> </span><span class="s2">&quot;Select GYRO interrupt edge&quot;</span>
-<span class="w">        </span><span class="k">depends on</span><span class="w"> </span><span class="p">(</span><span class="o">!</span>SMI230_DATA_SYNC)<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>SMI230_GYRO
-<span class="w">        </span><span class="k">default</span><span class="w"> </span>SMI230_GYRO_INT_ACTIVE_HIGH
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_INT_ACTIVE_HIGH
-<span class="w">        </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;interrupt is on raising edge&quot;</span>
-
-<span class="w">    </span><span class="k">config</span><span class="w"> </span>SMI230_GYRO_INT_ACTIVE_LOW
-<span class="w">        </span><span class="nb">bool</span><span class="w"> </span><span class="s2">&quot;interrupt is on falling edge&quot;</span>
-
-<span class="k">endchoice</span>
-
-<span class="k">config</span><span class="w"> </span>SMI230_MAX_BUFFER_LEN
-<span class="w">        </span><span class="nb">int</span><span class="w"> </span><span class="s2">&quot;configue read buffer size&quot;</span>
-<span class="w">        </span><span class="k">default</span><span class="w"> </span><span class="s2">&quot;1024&quot;</span>
-<span class="w">        </span><span class="k">help</span>
-<span class="sd">          Considering using FIFO, 1024 bytes are big enough for most cases. Do not change this value if not sure.</span>
+<p>Open linux/drivers/iio/imu/Makefile and add the SMI230 entry at bottom</p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nv">obj-y</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>smi230/
+<span class="nv">obj-y</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>st_lsm6dsx/
+<span class="nv">obj-y</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>st_lsm9ds0/
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Add entry in accel Makefile</p></li>
+<li><p>Extend devicetree</p></li>
 </ul>
-<p>Open linux/drivers/iio/accel/Makefile and add the SMI230 entry at bottom</p>
-<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nv">obj-$(CONFIG_IIO_SMI230_ACC)</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>smi230_acc.o
-<span class="nv">smi230_acc-objs</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span>smi230_acc_core.o
+<p>extend the device tree with the sensor entries. This part is very HW specific. Please consult your HW vendor, how to do it properly for your HW.</p>
+<p>I2C example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fragment</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">i2c_arm</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="n">__dormant__</span> <span class="p">{</span>
+                <span class="c1">#address-cells = &lt;1&gt;;</span>
+                <span class="c1">#size-cells = &lt;0&gt;;</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
 
-<span class="cp">ifeq ($(CONFIG_IIO_SMI230_ACC_I2C),y)</span>
-<span class="w">        </span>smi230_acc-objs<span class="w"> </span>+<span class="o">=</span><span class="w"> </span>smi230_acc_i2c.o
-<span class="cp">else</span>
-<span class="w">        </span>smi230_acc-objs<span class="w"> </span>+<span class="o">=</span><span class="w"> </span>smi230_acc_spi.o
-<span class="cp">endif</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Add entry in gyro Makefile</p></li>
-</ul>
-<p>Open linux/drivers/iio/gyro/Makefile and add the SMI230 entry at bottom</p>
-<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nv">obj-$(CONFIG_SMI230_GYRO)</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>smi230_gyro.o
-<span class="nv">smi230_gyro-objs</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span>smi230_gyro_core.o
-<span class="cp">ifeq ($(CONFIG_SMI230_GYRO_I2C),y)</span>
-<span class="w">        </span>smi230_gyro-objs<span class="w"> </span>+<span class="o">=</span><span class="w"> </span>smi230_gyro_i2c.o
-<span class="cp">else</span>
-<span class="w">        </span>smi230_gyro-objs<span class="w"> </span>+<span class="o">=</span><span class="w"> </span>smi230_gyro_spi.o
-<span class="cp">endif</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Change devicetree overlay</p></li>
-</ul>
-<p>Open linux/arch/arm/boot/dts/overlays/spi-rtc-overlay.dts and change the content as following</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">dts</span><span class="o">-</span><span class="n">v1</span><span class="o">/</span><span class="p">;</span>
-<span class="o">/</span><span class="n">plugin</span><span class="o">/</span><span class="p">;</span>
-
-<span class="o">/</span> <span class="p">{</span>
-        <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;brcm,bcm2835&quot;</span><span class="p">;</span>
-
-        <span class="n">fragment</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spidev0</span><span class="o">&gt;</span><span class="p">;</span>
-                <span class="n">__dormant__</span> <span class="p">{</span>
-                        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;disabled&quot;</span><span class="p">;</span>
-                <span class="p">};</span>
-        <span class="p">};</span>
-
-        <span class="n">fragment</span><span class="o">@</span><span class="mi">1</span> <span class="p">{</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spidev1</span><span class="o">&gt;</span><span class="p">;</span>
-                <span class="n">__dormant__</span> <span class="p">{</span>
-                        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;disabled&quot;</span><span class="p">;</span>
-                <span class="p">};</span>
-        <span class="p">};</span>
-
-        <span class="n">fragment</span><span class="o">@</span><span class="mi">2</span> <span class="p">{</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spi0</span><span class="o">&gt;</span><span class="p">;</span>
-                <span class="n">__dormant__</span> <span class="p">{</span>
-                        <span class="c1">#address-cells = &lt;1&gt;;</span>
-                        <span class="c1">#size-cells = &lt;0&gt;;</span>
+                <span class="n">smi230acc</span><span class="p">:</span> <span class="n">smi230acc</span><span class="o">@</span><span class="mi">18</span> <span class="p">{</span>
+                        <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230acc&quot;</span><span class="p">;</span>
+                        <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x18</span><span class="o">&gt;</span><span class="p">;</span>
+                        <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+                        <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span><span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">*/</span>
+                        <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;ACC_INT&quot;</span><span class="p">;</span>
                         <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
-
-                        <span class="n">smi230acc</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
-                                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;BOSCH,SMI230ACC&quot;</span><span class="p">;</span>
-                                <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">8000000</span><span class="o">&gt;</span><span class="p">;</span>
-                                <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
-                                <span class="n">gpio_irq</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span> <span class="mi">26</span> <span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
-                        <span class="p">};</span>
                 <span class="p">};</span>
         <span class="p">};</span>
+<span class="p">};</span>
 
-        <span class="n">fragment</span><span class="o">@</span><span class="mi">3</span> <span class="p">{</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spi0</span><span class="o">&gt;</span><span class="p">;</span>
-                <span class="n">__dormant__</span> <span class="p">{</span>
-                        <span class="c1">#address-cells = &lt;1&gt;;</span>
-                        <span class="c1">#size-cells = &lt;0&gt;;</span>
+<span class="n">fragment</span><span class="o">@</span><span class="mi">1</span> <span class="p">{</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">i2c_arm</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="n">__dormant__</span> <span class="p">{</span>
+                <span class="c1">#address-cells = &lt;1&gt;;</span>
+                <span class="c1">#size-cells = &lt;0&gt;;</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
+
+                <span class="n">smi230gyro</span><span class="p">:</span> <span class="n">smi230gyro</span><span class="o">@</span><span class="mi">68</span> <span class="p">{</span>
+                        <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230gyro&quot;</span><span class="p">;</span>
+                        <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mh">0x68</span><span class="o">&gt;</span><span class="p">;</span>
+                        <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+                        <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span><span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">*/</span>
+                        <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;GYRO_INT&quot;</span><span class="p">;</span>
                         <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
-
-                        <span class="n">smi230gyro</span><span class="o">@</span><span class="mi">1</span> <span class="p">{</span>
-                                <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;BOSCH,SMI230GYRO&quot;</span><span class="p">;</span>
-                                <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">8000000</span><span class="o">&gt;</span><span class="p">;</span>
-                                <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
-                                <span class="n">gpio_irq</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span> <span class="mi">20</span> <span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
-                        <span class="p">};</span>
                 <span class="p">};</span>
         <span class="p">};</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>SPI example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">fragment</span><span class="o">@</span><span class="mi">2</span> <span class="p">{</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spi0</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">__dormant__</span> <span class="p">{</span>
+        <span class="c1">#address-cells = &lt;1&gt;;</span>
+        <span class="c1">#size-cells = &lt;0&gt;;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
 
-        <span class="n">__overrides__</span> <span class="p">{</span>
-                <span class="n">smi230acc</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">,</span> <span class="s2">&quot;=0=2&quot;</span><span class="p">;</span>
-                <span class="n">smi230gyro</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">,</span> <span class="s2">&quot;=1=3&quot;</span><span class="p">;</span>
+        <span class="n">smi230acc</span><span class="o">@</span><span class="mi">0</span> <span class="p">{</span>
+            <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230acc&quot;</span><span class="p">;</span>
+            <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">10000000</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">26</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span><span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">*/</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;ACC_INT&quot;</span><span class="p">;</span>
         <span class="p">};</span>
+    <span class="p">};</span>
+<span class="p">};</span>
+
+<span class="n">fragment</span><span class="o">@</span><span class="mi">3</span> <span class="p">{</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">spi0</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">__dormant__</span> <span class="p">{</span>
+        <span class="c1">#address-cells = &lt;1&gt;;</span>
+        <span class="c1">#size-cells = &lt;0&gt;;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;okay&quot;</span><span class="p">;</span>
+
+        <span class="n">smi230gyro</span><span class="o">@</span><span class="mi">1</span> <span class="p">{</span>
+            <span class="n">compatible</span> <span class="o">=</span> <span class="s2">&quot;bosch,smi230gyro&quot;</span><span class="p">;</span>
+            <span class="n">spi</span><span class="o">-</span><span class="nb">max</span><span class="o">-</span><span class="n">frequency</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">10000000</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">reg</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">parent</span> <span class="o">=</span> <span class="o">&lt;&amp;</span><span class="n">gpio</span><span class="o">&gt;</span><span class="p">;</span>
+            <span class="n">interrupts</span> <span class="o">=</span> <span class="o">&lt;</span><span class="mi">20</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span> <span class="o">/*</span><span class="n">IRQ_TYPE_EDGE_RISING</span><span class="o">*/</span>
+            <span class="n">interrupt</span><span class="o">-</span><span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;GYRO_INT&quot;</span><span class="p">;</span>
+        <span class="p">};</span>
+    <span class="p">};</span>
 <span class="p">};</span>
 </pre></div>
 </div>
@@ -495,11 +327,13 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 
               <span class="o">-*-</span>     <span class="n">Industrial</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="n">triggered</span> <span class="n">buffer</span> <span class="n">support</span>
 
-              <span class="n">Accelerometers</span>  <span class="o">---&gt;</span>
-                      <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230</span> <span class="n">Accelerometer</span>
-
-              <span class="n">Digital</span> <span class="n">gyroscope</span> <span class="n">sensors</span>  <span class="o">---&gt;</span>
-                      <span class="o">&lt;*&gt;</span> <span class="n">BOSCH</span> <span class="n">SMI230</span> <span class="n">Gyro</span> <span class="n">Sensor</span>
+              <span class="n">Inertial</span> <span class="n">measurement</span> <span class="n">units</span>  <span class="o">---&gt;</span>
+                      <span class="o">&lt;*&gt;</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230</span> <span class="n">Inertial</span> <span class="n">Measurement</span> <span class="n">Unit</span>
+                      <span class="n">Select</span> <span class="n">communication</span> <span class="n">interface</span> <span class="p">(</span><span class="n">Enable</span> <span class="n">I2C</span> <span class="n">connection</span><span class="p">)</span>  <span class="o">---&gt;</span>
+                      <span class="n">Select</span> <span class="n">interrupt</span> <span class="n">operation</span> <span class="n">mode</span> <span class="p">(</span><span class="n">Enable</span> <span class="n">fifo</span><span class="o">-</span><span class="n">wm</span> <span class="n">interrupt</span><span class="p">)</span>  <span class="o">---&gt;</span>
+                      <span class="n">Select</span> <span class="n">ACC</span> <span class="n">interrupt</span> <span class="n">ouput</span> <span class="n">pin</span> <span class="p">(</span><span class="n">use</span> <span class="n">int2</span> <span class="k">as</span> <span class="n">interrupt</span> <span class="n">ouput</span><span class="p">)</span>  <span class="o">---&gt;</span>
+                      <span class="n">Select</span> <span class="n">GYRO</span> <span class="n">interrupt</span> <span class="n">ouput</span> <span class="n">pin</span> <span class="p">(</span><span class="n">use</span> <span class="n">int4</span> <span class="k">as</span> <span class="n">source</span><span class="p">)</span>  <span class="o">---&gt;</span>
+                      <span class="n">Interrupt</span> <span class="n">Features</span> <span class="p">(</span><span class="n">deactivate</span> <span class="n">interrupt</span> <span class="n">features</span><span class="p">)</span>  <span class="o">---&gt;</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -515,31 +349,39 @@ The SMI230 is a combined triaxial accelerometer (ACC) and triaxial gyroscope (GY
 <ul class="simple">
 <li><p>Install the kernel with SMI230 Linux driver in SD card</p></li>
 </ul>
-<p>insert the SD card (created in 2.3). A “boot” partition and a “rootfs” partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that</p>
+<p>insert the SD card (created in 2.3). A “bootfs” partition and a “rootfs” partition will be mounted. Find out the mount point. In Ubuntu the mount point looks like that</p>
 <blockquote>
-<div><p>/media/username/boot</p>
+<div><p>/media/username/bootfs</p>
 <p>/media/username/rootfs</p>
 </div></blockquote>
 <p>write the kernel with SMI230 Linux driver in SD card</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export KERNEL=kernel7
-export SD_BOOT_PATH=/media/username/boot
+export SD_BOOT_PATH=/media/username/bootfs
 export SD_ROOTFS_PATH=/media/username/rootfs
 sudo env PATH=$PATH make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=$SD_ROOTFS_PATH modules_install
 sudo cp $SD_BOOT_PATH/$KERNEL.img $SD_BOOT_PATH/$KERNEL-backup.img
-sudo cp arch/arm/boot/zImage $SD_BOOT_PATH/$KERNEL.img
-sudo cp arch/arm/boot/dts/*.dtb $SD_BOOT_PATH
-sudo cp arch/arm/boot/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
-sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
+sudo cp arch/arm/bootfs/zImage $SD_BOOT_PATH/$KERNEL.img
+sudo cp arch/arm/bootfs/dts/*.dtb $SD_BOOT_PATH
+sudo cp arch/arm/bootfs/dts/overlays/*.dtb* $SD_BOOT_PATH/overlays/
+sudo cp arch/arm/bootfs/dts/overlays/README $SD_BOOT_PATH/overlays/
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>adapt the boot configuraion</p></li>
 </ul>
 <p>open the “config.txt” in “boot” partition, and add the following entries</p>
+<p>SPI</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment some or all of these to enable the optional hardware interfaces</span>
 <span class="n">dtparam</span><span class="o">=</span><span class="n">spi</span><span class="o">=</span><span class="n">on</span>
-<span class="n">dtoverlay</span><span class="o">=</span><span class="n">spi</span><span class="o">-</span><span class="n">rtc</span><span class="p">,</span><span class="n">smi230acc</span>
-<span class="n">dtoverlay</span><span class="o">=</span><span class="n">spi</span><span class="o">-</span><span class="n">rtc</span><span class="p">,</span><span class="n">smi230gyro</span>
+<span class="n">dtoverlay</span><span class="o">=</span><span class="n">smi230</span><span class="o">-</span><span class="n">spi</span><span class="p">,</span><span class="n">smi230acc</span>
+<span class="n">dtoverlay</span><span class="o">=</span><span class="n">smi230</span><span class="o">-</span><span class="n">spi</span><span class="p">,</span><span class="n">smi230gyro</span>
+</pre></div>
+</div>
+<p>I2C</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment some or all of these to enable the optional hardware interfaces</span>
+<span class="n">dtparam</span><span class="o">=</span><span class="n">i2c_arm</span><span class="o">=</span><span class="n">on</span><span class="p">,</span><span class="n">i2c_arm_baudrate</span><span class="o">=</span><span class="mi">400000</span>
+<span class="n">dtoverlay</span><span class="o">=</span><span class="n">smi230</span><span class="o">-</span><span class="n">i2c</span><span class="p">,</span><span class="n">smi230acc</span>
+<span class="n">dtoverlay</span><span class="o">=</span><span class="n">smi230</span><span class="o">-</span><span class="n">i2c</span><span class="p">,</span><span class="n">smi230gyro</span>
 </pre></div>
 </div>
 <p>Take the SD card out and put it back in board.</p>
@@ -552,15 +394,10 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <li><p>Check driver initialization</p></li>
 </ul>
 <p>Power on the board. We firstly check if the driver was initialized properly</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmesg</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">SMI230</span>
-<span class="p">[</span>    <span class="mf">8.473601</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230GYRO</span> <span class="n">hardware</span> <span class="n">initialized</span>
-<span class="p">[</span>    <span class="mf">8.487473</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230GYRO</span> <span class="n">device</span> <span class="n">alloced</span>
-<span class="p">[</span>    <span class="mf">8.487783</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230GYRO</span> <span class="n">trigger</span> <span class="n">registered</span>
-<span class="p">[</span>    <span class="mf">8.487822</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230GYRO</span> <span class="n">trigger</span> <span class="n">buffer</span> <span class="n">registered</span>
-<span class="p">[</span>    <span class="mf">8.487880</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">gpio</span> <span class="n">pin</span> <span class="mi">20</span>
-<span class="p">[</span>    <span class="mf">8.488083</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">irq</span> <span class="n">number</span> <span class="mi">201</span>
-<span class="p">[</span>    <span class="mf">8.488205</span><span class="p">]</span> <span class="n">SMI230GYRO</span> <span class="n">spi0</span><span class="mf">.1</span><span class="p">:</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">SMI230GYRO</span> <span class="n">irq</span> <span class="n">alloced</span>
-<span class="p">[</span>    <span class="mf">8.492520</span><span class="p">]</span> <span class="n">Bosch</span> <span class="n">Sensor</span> <span class="n">Device</span> <span class="n">SMI230ACC</span> <span class="n">initialized</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmesg</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">smi230</span>
+<span class="p">[</span>   <span class="mf">52.312908</span><span class="p">]</span> <span class="n">smi230</span><span class="p">:</span> <span class="n">loading</span> <span class="n">out</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="n">tree</span> <span class="n">module</span> <span class="n">taints</span> <span class="n">kernel</span><span class="o">.</span>
+<span class="p">[</span>   <span class="mf">53.632399</span><span class="p">]</span> <span class="n">smi230acc_i2c</span> <span class="mi">1</span><span class="o">-</span><span class="mi">0018</span><span class="p">:</span> <span class="n">Write</span> <span class="n">config</span> <span class="n">file</span> <span class="n">OK</span>
+<span class="p">[</span>   <span class="mf">53.746229</span><span class="p">]</span> <span class="n">Acc</span> <span class="ow">and</span> <span class="n">Gyro</span> <span class="n">I2C</span> <span class="n">driver</span> <span class="n">registered</span> <span class="n">successfully</span>
 </pre></div>
 </div>
 <p>If the driver was installed properly, 2 folders will be created. A number of devicefiles are created in the folders. which we can use to read/write data from/to the sensor</p>
@@ -572,10 +409,10 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <p class="admonition-title">Note</p>
 <p>Folder name is assigned automatically by the system, therefore does not reflect the sensor type. There is a “name” file in the devicefolder, which we can read to find out the sensor type</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span>
 <span class="n">sudo</span> <span class="n">su</span>
 <span class="n">cat</span> <span class="n">name</span>
-<span class="n">SMI230ACC</span>
+<span class="n">smi230acc</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -586,36 +423,39 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <p>To change sensor settings we need root access. It is not sufficient just using “sudo …”  For the following examples we use accelerometer. Gyroscope is quite similar.</p>
 </div>
 <p>Check sensor type</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span>
 <span class="n">sudo</span> <span class="n">su</span>
 <span class="n">cat</span> <span class="n">name</span>
-<span class="n">SMI230ACC</span>
+<span class="n">smi230acc</span>
 </pre></div>
 </div>
 <p>check power mode and activate if it is suspended.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">power_mode</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="n">pwr</span>
 <span class="n">suspend</span>
-<span class="n">echo</span> <span class="n">normal</span> <span class="o">&gt;</span> <span class="n">power_mode</span>
-<span class="n">cat</span> <span class="n">power_mode</span>
+<span class="n">echo</span> <span class="n">normal</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="n">pwr</span>
+<span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="n">pwr</span>
 <span class="n">normal</span>
 </pre></div>
 </div>
 <p>Read data from sensor.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="n">in_accel_raw</span>
-<span class="mi">7797892</span> <span class="mi">78</span> <span class="o">-</span><span class="mi">94</span> <span class="mi">8160</span>
-<span class="n">cat</span> <span class="n">in_accel_range</span>
-<span class="mi">4</span>
-<span class="n">cat</span> <span class="n">in_accel_sampling_frequency</span>
-<span class="mf">100.000000</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="n">in_accel_z_raw</span>
+<span class="mi">7980</span>
+
+<span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="nb">range</span>
+<span class="mi">4</span><span class="n">g</span>
+
+<span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="n">odr</span>
+<span class="mi">100</span><span class="n">Hz</span>
 </pre></div>
 </div>
 <p>Change sensor setting</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="mi">200</span> <span class="o">&gt;</span> <span class="n">in_accel_sampling_frequency</span>
-<span class="n">cat</span> <span class="n">in_accel_sampling_frequency</span>
-<span class="mf">200.000000</span>
-<span class="n">echo</span> <span class="mi">8</span> <span class="o">&gt;</span> <span class="n">in_accel_range</span>
-<span class="n">cat</span> <span class="n">in_accel_range</span>
-<span class="mi">8</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="mi">200</span><span class="n">Hz</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="n">odr</span>
+<span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="n">odr</span>
+<span class="mi">100</span><span class="n">Hz</span>
+
+<span class="n">echo</span> <span class="mi">8</span><span class="n">g</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="nb">range</span>
+<span class="n">cat</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span><span class="o">/</span><span class="nb">range</span>
+<span class="mi">8</span><span class="n">g</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -638,35 +478,42 @@ sudo cp arch/arm/boot/dts/overlays/README $SD_BOOT_PATH/overlays/
 <p class="admonition-title">Note</p>
 <p>For the following exsample we use accelerometer. Gyroscope is quite similar. Run iio_generic_buffer as root.  Use device number of SMI230ACC -N 1.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">iio_generic_buffer</span> <span class="o">-</span><span class="n">N</span> <span class="mi">1</span> <span class="o">-</span><span class="n">c</span> <span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="n">a</span>
-<span class="n">iio</span> <span class="n">device</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">1</span>
-<span class="n">iio</span> <span class="n">trigger</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@raspberrypi</span><span class="p">:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">she2rt</span><span class="c1"># ./iio_generic_buffer -n smi230acc -c -1 -a</span>
+<span class="n">iio</span> <span class="n">device</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">0</span>
+<span class="n">iio</span> <span class="n">trigger</span> <span class="n">number</span> <span class="n">being</span> <span class="n">used</span> <span class="ow">is</span> <span class="mi">0</span>
 <span class="n">Enabling</span> <span class="nb">all</span> <span class="n">channels</span>
 <span class="n">Enabling</span><span class="p">:</span> <span class="n">in_accel_y_en</span>
+<span class="n">Enabling</span><span class="p">:</span> <span class="n">in_temp_object_en</span>
 <span class="n">Enabling</span><span class="p">:</span> <span class="n">in_accel_x_en</span>
 <span class="n">Enabling</span><span class="p">:</span> <span class="n">in_timestamp_en</span>
 <span class="n">Enabling</span><span class="p">:</span> <span class="n">in_accel_z_en</span>
-<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span> <span class="n">SMI230ACC</span><span class="o">-</span><span class="n">trigger</span>
-<span class="mf">28.000000</span> <span class="o">-</span><span class="mf">118.000000</span> <span class="mf">8154.000000</span> <span class="mi">1665428973532193471</span>
-<span class="mf">41.000000</span> <span class="o">-</span><span class="mf">102.000000</span> <span class="mf">8181.000000</span> <span class="mi">1665428973542061576</span>
-<span class="mf">83.000000</span> <span class="o">-</span><span class="mf">88.000000</span> <span class="mf">8152.000000</span> <span class="mi">1665428973551912910</span>
-<span class="mf">92.000000</span> <span class="o">-</span><span class="mf">80.000000</span> <span class="mf">8165.000000</span> <span class="mi">1665428973561775285</span>
-<span class="mf">87.000000</span> <span class="o">-</span><span class="mf">90.000000</span> <span class="mf">8173.000000</span> <span class="mi">1665428973571636306</span>
-<span class="mf">101.000000</span> <span class="o">-</span><span class="mf">93.000000</span> <span class="mf">8162.000000</span> <span class="mi">1665428973581498994</span>
-<span class="mf">104.000000</span> <span class="o">-</span><span class="mf">95.000000</span> <span class="mf">8152.000000</span> <span class="mi">1665428973591361369</span>
-<span class="mf">89.000000</span> <span class="o">-</span><span class="mf">106.000000</span> <span class="mf">8163.000000</span> <span class="mi">1665428973601222963</span>
-<span class="mf">57.000000</span> <span class="o">-</span><span class="mf">97.000000</span> <span class="mf">8164.000000</span> <span class="mi">1665428973611084557</span>
-<span class="p">[</span><span class="n">accX</span> <span class="n">accY</span> <span class="n">accZ</span> <span class="n">time_ns</span><span class="p">]</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span> <span class="n">smi230acc</span><span class="o">-</span><span class="n">trigger</span>
+<span class="mf">87.000000</span> <span class="mf">5.000000</span> <span class="mf">8033.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005920419779</span>
+<span class="mf">87.000000</span> <span class="mf">3.000000</span> <span class="mf">8026.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005930259755</span>
+<span class="mf">86.000000</span> <span class="mf">13.000000</span> <span class="mf">8020.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005940125825</span>
+<span class="mf">89.000000</span> <span class="o">-</span><span class="mf">4.000000</span> <span class="mf">8027.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005950007363</span>
+<span class="mf">91.000000</span> <span class="o">-</span><span class="mf">19.000000</span> <span class="mf">8032.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005959873902</span>
+<span class="mf">98.000000</span> <span class="o">-</span><span class="mf">5.000000</span> <span class="mf">8019.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005969743305</span>
+<span class="mf">101.000000</span> <span class="mf">0.000000</span> <span class="mf">8030.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005979612760</span>
+<span class="mf">100.000000</span> <span class="o">-</span><span class="mf">15.000000</span> <span class="mf">8029.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005989482215</span>
+<span class="mf">112.000000</span> <span class="o">-</span><span class="mf">18.000000</span> <span class="mf">8020.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559005999359795</span>
+<span class="mf">108.000000</span> <span class="o">-</span><span class="mf">8.000000</span> <span class="mf">8033.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559006009226023</span>
+<span class="mf">105.000000</span> <span class="mf">16.000000</span> <span class="mf">8016.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559006019096317</span>
+<span class="mf">91.000000</span> <span class="mf">6.000000</span> <span class="mf">8020.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559006029000986</span>
+<span class="mf">76.000000</span> <span class="o">-</span><span class="mf">10.000000</span> <span class="mf">8038.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559006038880030</span>
+<span class="mf">82.000000</span> <span class="o">-</span><span class="mf">13.000000</span> <span class="mf">8025.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559006048745064</span>
+<span class="mf">80.000000</span> <span class="mf">7.000000</span> <span class="mf">8017.000000</span> <span class="mf">26500.000000</span> <span class="mi">1734559006058626088</span>
+<span class="p">[</span><span class="n">accX</span> <span class="n">accY</span> <span class="n">accZ</span> <span class="n">temperature</span> <span class="n">time_ns</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>Check the device number of SMI230ACC by reading “name” from devicefolder</p>
+<p>Check the device number of smi230acc by reading “name” from devicefolder</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">bus</span><span class="o">/</span><span class="n">iio</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">iio</span><span class="p">:</span><span class="n">device0</span>
 <span class="n">sudo</span> <span class="n">su</span>
 <span class="n">cat</span> <span class="n">name</span>
-<span class="n">SMI230ACC</span>
+<span class="n">smi230acc</span>
 </pre></div>
 </div>
 </section>
